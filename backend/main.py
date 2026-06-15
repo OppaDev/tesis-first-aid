@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.infrastructure.database.database import engine
 from app.infrastructure.database.models import *  # noqa: F401, F403 — registra todos los modelos en Base.metadata
+from app.presentation.api.consulta_router import router as consulta_router
 
 
 @asynccontextmanager
@@ -18,6 +19,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.include_router(consulta_router)
 
 
 @app.get("/health")
