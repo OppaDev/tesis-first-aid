@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from app.domain.entities.paso import Paso
+from app.domain.entities.protocolo import Protocolo
 from app.domain.exceptions import ValidationError
 
 
@@ -13,7 +13,7 @@ class Emergencia:
     severidad: str
     etiqueta: str
     evaluacion_inicial: str
-    pasos: list[Paso] = field(default_factory=list)
+    protocolos: list[Protocolo] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if not self.id_emergencia or not self.id_emergencia.strip():
@@ -22,12 +22,12 @@ class Emergencia:
             raise ValidationError("El nombre de la emergencia es obligatorio")
 
     @property
-    def pasos_ordenados(self) -> list[Paso]:
-        return sorted(self.pasos, key=lambda p: p.numero)
+    def protocolos_ordenados(self) -> list[Protocolo]:
+        return sorted(self.protocolos, key=lambda p: p.numero)
 
-    def agregar_paso(self, paso: Paso) -> None:
-        if any(p.id_paso == paso.id_paso for p in self.pasos):
+    def agregar_protocolo(self, protocolo: Protocolo) -> None:
+        if any(p.id_protocolo == protocolo.id_protocolo for p in self.protocolos):
             raise ValidationError(
-                f"La emergencia ya contiene un paso con id {paso.id_paso}"
+                f"La emergencia ya contiene el protocolo {protocolo.id_protocolo}"
             )
-        self.pasos.append(paso)
+        self.protocolos.append(protocolo)

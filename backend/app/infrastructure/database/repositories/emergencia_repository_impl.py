@@ -4,8 +4,10 @@ from sqlalchemy.orm import selectinload
 
 from app.domain.entities.emergencia import Emergencia
 from app.domain.entities.paso import Paso
+from app.domain.entities.protocolo import Protocolo
 from app.domain.repositories.emergencia_repository import EmergenciaRepository
 from app.infrastructure.database.models.emergencia_model import EmergenciaModel
+from app.infrastructure.database.models.protocolo_model import ProtocoloModel
 
 
 class EmergenciaRepositoryImpl(EmergenciaRepository):
@@ -17,7 +19,9 @@ class EmergenciaRepositoryImpl(EmergenciaRepository):
         result = await self._session.execute(
             select(EmergenciaModel)
             .where(EmergenciaModel.nombre_emergencia == nombre_emergencia)
-            .options(selectinload(EmergenciaModel.pasos))
+            .options(
+                selectinload(EmergenciaModel.protocolos).selectinload(ProtocoloModel.paso)
+            )
         )
         model = result.scalar_one_or_none()
         if model is None:
@@ -35,18 +39,25 @@ class EmergenciaRepositoryImpl(EmergenciaRepository):
             etiqueta=model.etiqueta,
             evaluacion_inicial=model.evaluacion_inicial,
         )
-        for p in model.pasos:
-            emergencia.pasos.append(
-                Paso(
-                    id_paso=p.id_paso,
-                    numero=p.numero,
-                    instruccion=p.instruccion,
-                    observacion=p.observacion,
-                    imagen=p.imagen,
-                    paso_anterior=p.paso_anterior,
-                    paso_siguiente=p.paso_siguiente,
-                    anexo=p.anexo,
-                    id_emergencia=p.id_emergencia,
+        for pm in model.protocolos:
+            paso = None
+            if pm.paso is not None:
+                paso = Paso(
+                    id_protocolo=pm.paso.id_protocolo,
+                    paso_siguiente=pm.paso.paso_siguiente,
+                    paso_siguiente_no=pm.paso.paso_siguiente_no,
+                    anexo_si=pm.paso.anexo_si,
+                    anexo_no=pm.paso.anexo_no,
+                )
+            emergencia.protocolos.append(
+                Protocolo(
+                    id_protocolo=pm.id_protocolo,
+                    numero=pm.numero,
+                    instruccion=pm.instruccion,
+                    observacion=pm.observacion,
+                    imagen=pm.imagen,
+                    id_emergencia=pm.id_emergencia,
+                    paso=paso,
                 )
             )
         return emergencia

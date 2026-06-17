@@ -1,4 +1,4 @@
-from app.application.dtos.consulta_dto import ConsultaResponseDTO, PasoDTO
+from app.application.dtos.consulta_dto import ConsultaResponseDTO, PasoDTO, ProtocoloDTO
 from app.application.interfaces.clasificador_port import ClasificadorEmergenciaPort
 from app.application.interfaces.respondedor_qa_port import RespondedorQAPort
 from app.domain.repositories.emergencia_repository import EmergenciaRepository
@@ -26,10 +26,8 @@ class ProcesarConsultaUseCase:
 
     async def ejecutar(self, texto: str) -> ConsultaResponseDTO:
         tipo = self._enrutador.enrutar(texto)
-
         if tipo == TipoConsulta.PREGUNTA:
             return await self._manejar_pregunta(texto)
-
         return await self._manejar_narrativa(texto)
 
     async def _manejar_pregunta(self, texto: str) -> ConsultaResponseDTO:
@@ -40,10 +38,7 @@ class ProcesarConsultaUseCase:
                 respuesta=None,
                 mensaje=_MSG_SIN_INFO,
             )
-        return ConsultaResponseDTO(
-            tipo=TipoConsulta.PREGUNTA,
-            respuesta=respuesta,
-        )
+        return ConsultaResponseDTO(tipo=TipoConsulta.PREGUNTA, respuesta=respuesta)
 
     async def _manejar_narrativa(self, texto: str) -> ConsultaResponseDTO:
         nombre_emergencia = await self._clasificador.clasificar(texto)
@@ -57,21 +52,27 @@ class ProcesarConsultaUseCase:
                 mensaje="Emergencia identificada pero el protocolo aún no está cargado en la base de datos.",
             )
 
-        pasos = [
-            PasoDTO(
+        protocolos = [
+            ProtocoloDTO(
+                id_protocolo=p.id_protocolo,
                 numero=p.numero,
                 instruccion=p.instruccion,
                 observacion=p.observacion,
                 imagen=p.imagen,
-                paso_anterior=p.paso_anterior,
-                paso_siguiente=p.paso_siguiente,
+                es_condicion=p.es_condicion,
+                paso=PasoDTO(
+                    paso_siguiente=p.paso.paso_siguiente,
+                    paso_siguiente_no=p.paso.paso_siguiente_no,
+                    anexo_si=p.paso.anexo_si,
+                    anexo_no=p.paso.anexo_no,
+                ) if p.paso else None,
             )
-            for p in emergencia.pasos_ordenados
+            for p in emergencia.protocolos_ordenados
         ]
 
         return ConsultaResponseDTO(
             tipo=TipoConsulta.NARRATIVA,
             emergencia_detectada=nombre_emergencia,
             protocolo_encontrado=True,
-            pasos=pasos,
+            protocolos=protocolos,
         )

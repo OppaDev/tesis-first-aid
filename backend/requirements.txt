@@ -17,6 +17,9 @@ torch==2.5.1
 transformers==4.47.0
 sentence-transformers==5.4.1
 
+# Seed / utilidades
+openpyxl==3.1.5
+
 # Seguridad
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
