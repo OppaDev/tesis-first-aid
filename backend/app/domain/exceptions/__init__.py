@@ -1,3 +1,3 @@
-from app.domain.exceptions.domain_error import DomainError, ValidationError
+from app.domain.exceptions.domain_error import DomainError, NotFoundError, ValidationError
 
-__all__ = ["DomainError", "ValidationError"]
+__all__ = ["DomainError", "NotFoundError", "ValidationError"]

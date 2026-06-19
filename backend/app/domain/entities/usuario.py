@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from app.domain.exceptions import ValidationError
+from app.domain.services.cedula_service import validar_cedula_ecuatoriana
 
 
 @dataclass
@@ -17,8 +18,8 @@ class Usuario:
     def __post_init__(self) -> None:
         if not self.cedula or not self.cedula.strip():
             raise ValidationError("La cédula es obligatoria")
-        if not self.cedula.isdigit():
-            raise ValidationError("La cédula solo puede contener dígitos")
+        if not validar_cedula_ecuatoriana(self.cedula):
+            raise ValidationError("La cédula ecuatoriana no es válida")
         if not self.nombres or not self.nombres.strip():
             raise ValidationError("Los nombres son obligatorios")
         if not self.apellidos or not self.apellidos.strip():

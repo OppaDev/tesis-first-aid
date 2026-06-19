@@ -1,0 +1,200 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-06-18T00:00:00.000Z",
+  "__export_source": "manual:first-aid-api",
+  "resources": [
+    {
+      "_id": "wrk_firstaid",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "First Aid API",
+      "description": "Backend de asistencia personalizada en primeros auxilios",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_firstaid",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000",
+        "token": ""
+      },
+      "metaSortKey": 0
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_firstaid",
+      "name": "Auth",
+      "metaSortKey": -3
+    },
+    {
+      "_id": "fld_perfil",
+      "_type": "request_group",
+      "parentId": "wrk_firstaid",
+      "name": "Perfil Clínico",
+      "metaSortKey": -2
+    },
+    {
+      "_id": "fld_consulta",
+      "_type": "request_group",
+      "parentId": "wrk_firstaid",
+      "name": "Consulta",
+      "metaSortKey": -1
+    },
+    {
+      "_id": "req_consulta_narrativa",
+      "_type": "request",
+      "parentId": "fld_consulta",
+      "name": "Consulta - Narrativa de emergencia",
+      "method": "POST",
+      "url": "{{ _.base_url }}/consulta",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"texto\": \"Mi compañero se está quemando la mano con aceite caliente\"\n}"
+      },
+      "metaSortKey": -2
+    },
+    {
+      "_id": "req_consulta_pregunta",
+      "_type": "request",
+      "parentId": "fld_consulta",
+      "name": "Consulta - Pregunta (Q&A)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/consulta",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"texto\": \"¿Qué hago si alguien se está ahogando?\"\n}"
+      },
+      "metaSortKey": -1
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "wrk_firstaid",
+      "name": "Health Check",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "headers": [],
+      "body": {},
+      "metaSortKey": -4
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"admin123\"\n}"
+      },
+      "metaSortKey": -2
+    },
+    {
+      "_id": "req_registro",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Registro",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/registro",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cedula\": \"0402084040\",\n  \"nombres\": \"Jefferson Leonardo\",\n  \"apellidos\": \"Obando Carlosma\",\n  \"fecha_nacimiento\": \"1999-05-17\",\n  \"email\": \"user@example.com\",\n  \"password\": \"admin123\"\n}"
+      },
+      "metaSortKey": -1
+    },
+    {
+      "_id": "req_perfil_crear",
+      "_type": "request",
+      "parentId": "fld_perfil",
+      "name": "Crear Perfil",
+      "method": "POST",
+      "url": "{{ _.base_url }}/perfil",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 175,\n  \"peso_kg\": 70,\n  \"ids_condiciones\": []\n}"
+      },
+      "metaSortKey": -4
+    },
+    {
+      "_id": "req_perfil_obtener",
+      "_type": "request",
+      "parentId": "fld_perfil",
+      "name": "Obtener Perfil",
+      "method": "GET",
+      "url": "{{ _.base_url }}/perfil",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -3
+    },
+    {
+      "_id": "req_perfil_patch",
+      "_type": "request",
+      "parentId": "fld_perfil",
+      "name": "Actualizar Parcial Perfil (PATCH)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/perfil",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"peso_kg\": 73\n}"
+      },
+      "metaSortKey": -2.5
+    },
+    {
+      "_id": "req_perfil_actualizar",
+      "_type": "request",
+      "parentId": "fld_perfil",
+      "name": "Actualizar Perfil",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/perfil",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 176,\n  \"peso_kg\": 72,\n  \"ids_condiciones\": []\n}"
+      },
+      "metaSortKey": -2
+    },
+    {
+      "_id": "req_perfil_eliminar",
+      "_type": "request",
+      "parentId": "fld_perfil",
+      "name": "Eliminar Perfil",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/perfil",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -1
+    }
+  ]
+}
