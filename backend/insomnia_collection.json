@@ -61,6 +61,23 @@
       "metaSortKey": -2
     },
     {
+      "_id": "req_consulta_autenticada",
+      "_type": "request",
+      "parentId": "fld_consulta",
+      "name": "Consulta - Narrativa autenticada (con alertas)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/consulta",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"texto\": \"Mi compañero se cortó la mano y está sangrando mucho\"\n}"
+      },
+      "metaSortKey": -1.5
+    },
+    {
       "_id": "req_consulta_pregunta",
       "_type": "request",
       "parentId": "fld_consulta",

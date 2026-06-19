@@ -7,6 +7,7 @@ from app.infrastructure.database.repositories.usuario_repository_impl import Usu
 from app.infrastructure.security.jwt import verificar_token
 
 _bearer = HTTPBearer()
+_bearer_opcional = HTTPBearer(auto_error=False)
 
 
 async def get_usuario_actual(
@@ -23,3 +24,19 @@ async def get_usuario_actual(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
 
     return usuario
+
+
+async def get_usuario_opcional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_opcional),
+    db: AsyncSession = Depends(get_db),
+):
+    """Como get_usuario_actual pero no falla si no hay token: devuelve None.
+
+    Permite endpoints que funcionan sin login pero se enriquecen si lo hay."""
+    if credentials is None:
+        return None
+    payload = verificar_token(credentials.credentials)
+    if not payload:
+        return None
+    repo = UsuarioRepositoryImpl(db)
+    return await repo.obtener_por_cedula(payload.get("sub", ""))

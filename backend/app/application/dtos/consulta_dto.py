@@ -22,10 +22,18 @@ class ProtocoloDTO(BaseModel):
     paso: PasoDTO | None = None
 
 
+class AlertaDTO(BaseModel):
+    nombre_condicion: str
+    mensaje: str
+    severidad: str
+    detalle: str | None = None
+
+
 class ConsultaResponseDTO(BaseModel):
     tipo: str
     emergencia_detectada: str | None = None
     protocolo_encontrado: bool = False
     protocolos: list[ProtocoloDTO] = []
+    alertas: list[AlertaDTO] = []
     respuesta: str | None = None
     mensaje: str | None = None

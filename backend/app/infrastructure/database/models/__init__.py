@@ -1,3 +1,4 @@
+from app.infrastructure.database.models.alerta_regla_model import AlertaReglaModel
 from app.infrastructure.database.models.associations import rol_permiso
 from app.infrastructure.database.models.categoria_model import CategoriaModel
 from app.infrastructure.database.models.condicion_model import CondicionModel
@@ -12,6 +13,7 @@ from app.infrastructure.database.models.usuario_model import UsuarioModel
 
 __all__ = [
     "rol_permiso",
+    "AlertaReglaModel",
     "CategoriaModel",
     "CondicionModel",
     "EmergenciaModel",
