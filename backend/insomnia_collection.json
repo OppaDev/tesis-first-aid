@@ -120,6 +120,17 @@
       "metaSortKey": -1
     },
     {
+      "_id": "req_condiciones_catalogo",
+      "_type": "request",
+      "parentId": "fld_perfil",
+      "name": "Catálogo de Condiciones",
+      "method": "GET",
+      "url": "{{ _.base_url }}/condiciones",
+      "headers": [],
+      "body": {},
+      "metaSortKey": -5
+    },
+    {
       "_id": "req_perfil_crear",
       "_type": "request",
       "parentId": "fld_perfil",
