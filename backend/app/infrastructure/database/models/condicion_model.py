@@ -15,6 +15,6 @@ class CondicionModel(Base):
     descripcion_condicion: Mapped[str] = mapped_column(String(300), nullable=False)
 
     categoria: Mapped["CategoriaModel"] = relationship(back_populates="condiciones")
-    perfiles: Mapped[list["PerfilClinicoModel"]] = relationship(
-        secondary="perfil_condicion", back_populates="condiciones"
+    perfiles: Mapped[list["PerfilCondicionModel"]] = relationship(
+        back_populates="condicion"
     )

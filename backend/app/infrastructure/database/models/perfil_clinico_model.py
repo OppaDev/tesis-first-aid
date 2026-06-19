@@ -8,8 +8,8 @@ class PerfilClinicoModel(Base):
     __tablename__ = "perfil_clinico"
 
     id_perfil: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    cedula: Mapped[str | None] = mapped_column(
-        ForeignKey("usuario.cedula"), unique=True, nullable=True
+    cedula: Mapped[str] = mapped_column(
+        ForeignKey("usuario.cedula"), unique=True, nullable=False
     )
     genero: Mapped[str] = mapped_column(String(12), nullable=False)
     tipo_sangre: Mapped[str] = mapped_column(String(12), nullable=False)
@@ -17,6 +17,6 @@ class PerfilClinicoModel(Base):
     peso_kg: Mapped[float] = mapped_column(Float, nullable=False)
 
     usuario: Mapped["UsuarioModel"] = relationship(back_populates="perfil_clinico")
-    condiciones: Mapped[list["CondicionModel"]] = relationship(
-        secondary="perfil_condicion", back_populates="perfiles"
+    condiciones: Mapped[list["PerfilCondicionModel"]] = relationship(
+        back_populates="perfil", cascade="all, delete-orphan"
     )

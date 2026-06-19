@@ -5,12 +5,17 @@ from pydantic import BaseModel, Field
 from app.domain.entities.perfil_clinico import PerfilClinico
 
 
+class CondicionInputDTO(BaseModel):
+    id_condicion: int
+    detalle: str | None = None
+
+
 class PerfilClinicoRequestDTO(BaseModel):
     genero: str
     tipo_sangre: str
     altura_cm: float = Field(..., gt=0)
     peso_kg: float = Field(..., gt=0)
-    ids_condiciones: list[int] = []
+    condiciones: list[CondicionInputDTO] = []
 
 
 class PerfilClinicoPatchDTO(BaseModel):
@@ -18,7 +23,7 @@ class PerfilClinicoPatchDTO(BaseModel):
     tipo_sangre: str | None = None
     altura_cm: float | None = Field(default=None, gt=0)
     peso_kg: float | None = Field(default=None, gt=0)
-    ids_condiciones: list[int] | None = None
+    condiciones: list[CondicionInputDTO] | None = None
 
 
 class CondicionResponseDTO(BaseModel):
@@ -26,6 +31,7 @@ class CondicionResponseDTO(BaseModel):
     nombre_condicion: str
     descripcion_condicion: str
     id_categoria: int | None = None
+    detalle: str | None = None
 
 
 class PerfilClinicoResponseDTO(BaseModel):
@@ -52,6 +58,7 @@ class PerfilClinicoResponseDTO(BaseModel):
                     nombre_condicion=c.nombre_condicion,
                     descripcion_condicion=c.descripcion_condicion,
                     id_categoria=c.id_categoria,
+                    detalle=c.detalle,
                 )
                 for c in perfil.condiciones
             ],

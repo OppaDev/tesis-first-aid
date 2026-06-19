@@ -132,7 +132,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 175,\n  \"peso_kg\": 70,\n  \"ids_condiciones\": []\n}"
+        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 175,\n  \"peso_kg\": 70,\n  \"condiciones\": [\n    { \"id_condicion\": 1, \"detalle\": \"Diabetes tipo 2, insulina desde 2015\" },\n    { \"id_condicion\": 9, \"detalle\": null }\n  ]\n}"
       },
       "metaSortKey": -4
     },
@@ -162,7 +162,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"peso_kg\": 73\n}"
+        "text": "{\n  \"condiciones\": [\n    { \"id_condicion\": 1, \"detalle\": \"Diabetes tipo 2, ahora con bomba de insulina\" }\n  ]\n}"
       },
       "metaSortKey": -2.5
     },
@@ -179,7 +179,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 176,\n  \"peso_kg\": 72,\n  \"ids_condiciones\": []\n}"
+        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 176,\n  \"peso_kg\": 72,\n  \"condiciones\": [\n    { \"id_condicion\": 3, \"detalle\": \"Asma leve, uso inhalador ocasional\" }\n  ]\n}"
       },
       "metaSortKey": -2
     },

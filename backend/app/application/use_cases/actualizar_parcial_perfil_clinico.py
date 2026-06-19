@@ -21,10 +21,10 @@ class ActualizarParcialPerfilClinicoUseCase:
             altura_cm=dto.altura_cm if dto.altura_cm is not None else existente.altura_cm,
             peso_kg=dto.peso_kg if dto.peso_kg is not None else existente.peso_kg,
         )
-        ids_condiciones = (
-            dto.ids_condiciones
-            if dto.ids_condiciones is not None
-            else [c.id_condicion for c in existente.condiciones]
+        condiciones = (
+            [(c.id_condicion, c.detalle) for c in dto.condiciones]
+            if dto.condiciones is not None
+            else [(c.id_condicion, c.detalle) for c in existente.condiciones]
         )
-        actualizado = await self._repo.actualizar(perfil, ids_condiciones)
+        actualizado = await self._repo.actualizar(perfil, condiciones)
         return PerfilClinicoResponseDTO.desde_entidad(actualizado)

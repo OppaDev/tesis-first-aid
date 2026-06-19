@@ -18,5 +18,6 @@ class CrearPerfilClinicoUseCase:
             altura_cm=dto.altura_cm,
             peso_kg=dto.peso_kg,
         )
-        creado = await self._repo.crear(cedula, perfil, dto.ids_condiciones)
+        condiciones = [(c.id_condicion, c.detalle) for c in dto.condiciones]
+        creado = await self._repo.crear(cedula, perfil, condiciones)
         return PerfilClinicoResponseDTO.desde_entidad(creado)

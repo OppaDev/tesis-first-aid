@@ -21,5 +21,6 @@ class ActualizarPerfilClinicoUseCase:
             altura_cm=dto.altura_cm,
             peso_kg=dto.peso_kg,
         )
-        actualizado = await self._repo.actualizar(perfil, dto.ids_condiciones)
+        condiciones = [(c.id_condicion, c.detalle) for c in dto.condiciones]
+        actualizado = await self._repo.actualizar(perfil, condiciones)
         return PerfilClinicoResponseDTO.desde_entidad(actualizado)
