@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
+from app.domain.entities.rol import Rol
 from app.domain.exceptions import ValidationError
 from app.domain.services.cedula_service import validar_cedula_ecuatoriana
 
@@ -14,6 +15,7 @@ class Usuario:
     email: str
     password: str  # hash de la contraseña, nunca texto plano
     id_rol: int | None = None
+    rol: Rol | None = None
 
     def __post_init__(self) -> None:
         if not self.cedula or not self.cedula.strip():
@@ -28,6 +30,9 @@ class Usuario:
             raise ValidationError("El email no tiene un formato válido")
         if self.fecha_nacimiento >= date.today():
             raise ValidationError("La fecha de nacimiento debe ser anterior a hoy")
+
+    def tiene_permiso(self, nombre_permiso: str) -> bool:
+        return self.rol is not None and self.rol.tiene_permiso(nombre_permiso)
 
     @property
     def nombre_completo(self) -> str:

@@ -1,7 +1,10 @@
+from typing import Callable
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.entities.usuario import Usuario
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.repositories.usuario_repository_impl import UsuarioRepositoryImpl
 from app.infrastructure.security.jwt import verificar_token
@@ -40,3 +43,19 @@ async def get_usuario_opcional(
         return None
     repo = UsuarioRepositoryImpl(db)
     return await repo.obtener_por_cedula(payload.get("sub", ""))
+
+
+def requiere_permiso(nombre_permiso: str) -> Callable:
+    """Dependencia (guard) que exige un permiso concreto al usuario autenticado.
+
+    Uso: dependencies=[Depends(requiere_permiso("gestionar_reglas"))]."""
+
+    async def verificar(usuario: Usuario = Depends(get_usuario_actual)) -> Usuario:
+        if not usuario.tiene_permiso(nombre_permiso):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tiene permiso para realizar esta acción",
+            )
+        return usuario
+
+    return verificar

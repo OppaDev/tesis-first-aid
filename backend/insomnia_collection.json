@@ -45,6 +45,103 @@
       "metaSortKey": -1
     },
     {
+      "_id": "fld_admin_reglas",
+      "_type": "request_group",
+      "parentId": "wrk_firstaid",
+      "name": "Admin - Reglas de alerta",
+      "metaSortKey": 0
+    },
+    {
+      "_id": "req_reglas_listar",
+      "_type": "request",
+      "parentId": "fld_admin_reglas",
+      "name": "Listar reglas",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/reglas",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -5
+    },
+    {
+      "_id": "req_reglas_obtener",
+      "_type": "request",
+      "parentId": "fld_admin_reglas",
+      "name": "Obtener regla por id",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/reglas/1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -4
+    },
+    {
+      "_id": "req_reglas_crear",
+      "_type": "request",
+      "parentId": "fld_admin_reglas",
+      "name": "Crear regla",
+      "method": "POST",
+      "url": "{{ _.base_url }}/admin/reglas",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id_condicion\": 13,\n  \"id_emergencia\": \"E0001\",\n  \"mensaje\": \"Movilidad reducida: considerar dificultad para reposicionar a la persona durante la atención.\",\n  \"severidad\": \"media\"\n}"
+      },
+      "metaSortKey": -3
+    },
+    {
+      "_id": "req_reglas_actualizar",
+      "_type": "request",
+      "parentId": "fld_admin_reglas",
+      "name": "Actualizar regla (PUT)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/admin/reglas/1",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id_condicion\": 11,\n  \"id_emergencia\": \"E0001\",\n  \"mensaje\": \"Anticoagulantes: el sangrado puede ser más abundante. Presión firme y sostenida.\",\n  \"severidad\": \"alta\"\n}"
+      },
+      "metaSortKey": -2
+    },
+    {
+      "_id": "req_reglas_patch",
+      "_type": "request",
+      "parentId": "fld_admin_reglas",
+      "name": "Actualizar parcial regla (PATCH)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/admin/reglas/1",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"severidad\": \"critica\"\n}"
+      },
+      "metaSortKey": -1.5
+    },
+    {
+      "_id": "req_reglas_eliminar",
+      "_type": "request",
+      "parentId": "fld_admin_reglas",
+      "name": "Eliminar regla",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/admin/reglas/1",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -1
+    },
+    {
       "_id": "req_consulta_narrativa",
       "_type": "request",
       "parentId": "fld_consulta",
