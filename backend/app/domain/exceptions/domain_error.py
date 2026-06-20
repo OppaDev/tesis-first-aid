@@ -8,3 +8,7 @@ class ValidationError(DomainError):
 
 class NotFoundError(DomainError):
     """Se lanza cuando un recurso solicitado no existe."""
+
+
+class ConflictError(DomainError):
+    """Se lanza cuando una operación viola una invariante de negocio del sistema."""

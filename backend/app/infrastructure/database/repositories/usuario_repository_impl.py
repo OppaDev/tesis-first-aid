@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -48,6 +48,12 @@ class UsuarioRepositoryImpl(UsuarioRepository):
         model.id_rol = id_rol
         await self._session.commit()
         return await self.obtener_por_cedula(cedula)
+
+    async def contar_por_rol(self, id_rol: int) -> int:
+        result = await self._session.execute(
+            select(func.count()).select_from(UsuarioModel).where(UsuarioModel.id_rol == id_rol)
+        )
+        return result.scalar_one()
 
     async def crear(self, usuario: Usuario) -> Usuario:
         model = UsuarioModel(

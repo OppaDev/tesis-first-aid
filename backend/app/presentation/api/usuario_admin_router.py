@@ -14,7 +14,7 @@ from app.application.use_cases.cambiar_rol_usuario import CambiarRolUsuarioUseCa
 from app.application.use_cases.listar_usuarios import ListarUsuariosUseCase
 from app.application.use_cases.obtener_perfil_clinico import ObtenerPerfilClinicoUseCase
 from app.application.use_cases.obtener_usuario import ObtenerUsuarioUseCase
-from app.domain.exceptions import NotFoundError, ValidationError
+from app.domain.exceptions import ConflictError, NotFoundError, ValidationError
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.repositories.perfil_clinico_repository_impl import PerfilClinicoRepositoryImpl
 from app.infrastructure.database.repositories.usuario_repository_impl import UsuarioRepositoryImpl
@@ -49,6 +49,8 @@ async def cambiar_rol(cedula: str, dto: CambiarRolRequestDTO, db: AsyncSession =
         return await CambiarRolUsuarioUseCase(repo).ejecutar(cedula, dto)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ConflictError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El rol indicado no existe")
 

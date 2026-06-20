@@ -19,3 +19,6 @@ class UsuarioRepository(ABC):
 
     @abstractmethod
     async def actualizar_rol(self, cedula: str, id_rol: int) -> Usuario | None: ...
+
+    @abstractmethod
+    async def contar_por_rol(self, id_rol: int) -> int: ...
