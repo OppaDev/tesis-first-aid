@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dtos.consulta_dto import ConsultaRequestDTO, ConsultaResponseDTO
 from app.application.interfaces.clasificador_port import ClasificadorEmergenciaPort
 from app.application.interfaces.respondedor_qa_port import RespondedorQAPort
+from app.application.interfaces.transcriptor_port import TranscriptorAudioPort
 from app.application.use_cases.procesar_consulta import ProcesarConsultaUseCase
 from app.domain.entities.usuario import Usuario
 from app.domain.repositories.alerta_regla_repository import AlertaReglaRepository
@@ -17,6 +18,7 @@ from app.infrastructure.database.repositories.emergencia_repository_impl import 
 from app.infrastructure.database.repositories.perfil_clinico_repository_impl import PerfilClinicoRepositoryImpl
 from app.infrastructure.external_services.clasificador_emergencias import ClasificadorEmergenciasAdapter
 from app.infrastructure.external_services.sistema_qa import SistemaQAAdapter
+from app.infrastructure.external_services.transcriptor_whisper import TranscriptorWhisperAdapter
 from app.presentation.dependencies.auth import get_usuario_opcional
 
 router = APIRouter(prefix="/consulta", tags=["Consulta"])
@@ -26,6 +28,7 @@ _clasificador = ClasificadorEmergenciasAdapter()
 _qa = SistemaQAAdapter()
 _enrutador = EnrutadorService()
 _recomendacion = RecomendacionService()
+_transcriptor = TranscriptorWhisperAdapter()
 
 
 def get_clasificador() -> ClasificadorEmergenciaPort:
@@ -36,18 +39,19 @@ def get_qa() -> RespondedorQAPort:
     return _qa
 
 
-@router.post("", response_model=ConsultaResponseDTO)
-async def procesar_consulta(
-    request: ConsultaRequestDTO,
-    db: AsyncSession = Depends(get_db),
-    clasificador: ClasificadorEmergenciaPort = Depends(get_clasificador),
-    qa: RespondedorQAPort = Depends(get_qa),
-    usuario: Usuario | None = Depends(get_usuario_opcional),
-) -> ConsultaResponseDTO:
+def get_transcriptor() -> TranscriptorAudioPort:
+    return _transcriptor
+
+
+def _construir_use_case(
+    db: AsyncSession,
+    clasificador: ClasificadorEmergenciaPort,
+    qa: RespondedorQAPort,
+) -> ProcesarConsultaUseCase:
     emergencia_repo: EmergenciaRepository = EmergenciaRepositoryImpl(db)
     perfil_repo: PerfilClinicoRepository = PerfilClinicoRepositoryImpl(db)
     alerta_regla_repo: AlertaReglaRepository = AlertaReglaRepositoryImpl(db)
-    use_case = ProcesarConsultaUseCase(
+    return ProcesarConsultaUseCase(
         _enrutador,
         clasificador,
         qa,
@@ -56,5 +60,43 @@ async def procesar_consulta(
         alerta_regla_repo,
         _recomendacion,
     )
+
+
+@router.post("", response_model=ConsultaResponseDTO)
+async def procesar_consulta(
+    request: ConsultaRequestDTO,
+    db: AsyncSession = Depends(get_db),
+    clasificador: ClasificadorEmergenciaPort = Depends(get_clasificador),
+    qa: RespondedorQAPort = Depends(get_qa),
+    usuario: Usuario | None = Depends(get_usuario_opcional),
+) -> ConsultaResponseDTO:
+    use_case = _construir_use_case(db, clasificador, qa)
     cedula = usuario.cedula if usuario else None
     return await use_case.ejecutar(request.texto, cedula)
+
+
+@router.post("/audio", response_model=ConsultaResponseDTO)
+async def procesar_consulta_audio(
+    archivo: UploadFile = File(..., description="Audio de la consulta (m4a, ogg, wav...)"),
+    db: AsyncSession = Depends(get_db),
+    clasificador: ClasificadorEmergenciaPort = Depends(get_clasificador),
+    qa: RespondedorQAPort = Depends(get_qa),
+    transcriptor: TranscriptorAudioPort = Depends(get_transcriptor),
+    usuario: Usuario | None = Depends(get_usuario_opcional),
+) -> ConsultaResponseDTO:
+    audio = await archivo.read()
+    if not audio:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El archivo de audio está vacío")
+
+    texto = (await transcriptor.transcribir(audio)).strip()
+    if not texto:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No se detectó voz en el audio. Intenta de nuevo en un lugar más silencioso.",
+        )
+
+    use_case = _construir_use_case(db, clasificador, qa)
+    cedula = usuario.cedula if usuario else None
+    respuesta = await use_case.ejecutar(texto, cedula)
+    respuesta.transcripcion = texto
+    return respuesta

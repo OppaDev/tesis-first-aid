@@ -31,6 +31,7 @@ class AlertaDTO(BaseModel):
 
 class ConsultaResponseDTO(BaseModel):
     tipo: str
+    transcripcion: str | None = None  # texto reconocido del audio (solo en /consulta/audio)
     emergencia_detectada: str | None = None
     protocolo_encontrado: bool = False
     protocolos: list[ProtocoloDTO] = []

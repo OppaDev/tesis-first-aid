@@ -13,5 +13,11 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
+    # ASR (faster-whisper). En despliegue con GPU: asr_device="cuda", asr_compute_type="float16".
+    asr_model: str = "medium"
+    asr_device: str = "cpu"
+    asr_compute_type: str = "int8"
+    asr_idioma: str = "es"
+
 
 settings = Settings()

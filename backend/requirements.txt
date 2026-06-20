@@ -18,6 +18,9 @@ torch==2.5.1
 transformers==4.47.0
 sentence-transformers==5.4.1
 
+# ASR (voz -> texto): Whisper optimizado, decodifica audio vía PyAV (sin ffmpeg del sistema)
+faster-whisper==1.1.0
+
 # Seed / utilidades
 openpyxl==3.1.5
 
