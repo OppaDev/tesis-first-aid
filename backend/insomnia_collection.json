@@ -52,6 +52,86 @@
       "metaSortKey": 0
     },
     {
+      "_id": "fld_admin_usuarios",
+      "_type": "request_group",
+      "parentId": "wrk_firstaid",
+      "name": "Admin - Usuarios",
+      "metaSortKey": 1
+    },
+    {
+      "_id": "req_usuarios_listar",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Listar usuarios",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/usuarios",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -6
+    },
+    {
+      "_id": "req_usuarios_obtener",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Obtener usuario",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/usuarios/0402084040",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -5
+    },
+    {
+      "_id": "req_usuarios_cambiar_rol",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Cambiar rol (1=admin, 2=usuario)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/admin/usuarios/0402084040/rol",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id_rol\": 1\n}"
+      },
+      "metaSortKey": -4
+    },
+    {
+      "_id": "req_usuarios_perfil_obtener",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Ver perfil clínico de un usuario",
+      "method": "GET",
+      "url": "{{ _.base_url }}/admin/usuarios/0402084040/perfil",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -3
+    },
+    {
+      "_id": "req_usuarios_perfil_patch",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Editar detalle de condiciones (PATCH)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/admin/usuarios/0402084040/perfil",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"condiciones\": [\n    { \"id_condicion\": 1, \"detalle\": \"Revisado por médico ocupacional: control glucémico mensual\" }\n  ]\n}"
+      },
+      "metaSortKey": -2
+    },
+    {
       "_id": "req_reglas_listar",
       "_type": "request",
       "parentId": "fld_admin_reglas",

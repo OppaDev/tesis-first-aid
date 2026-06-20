@@ -11,6 +11,7 @@ from app.presentation.api.condicion_router import router as condicion_router
 from app.presentation.api.consulta_router import router as consulta_router
 from app.presentation.api.perfil_router import router as perfil_router
 from app.presentation.api.regla_router import router as regla_router
+from app.presentation.api.usuario_admin_router import router as usuario_admin_router
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -33,6 +34,7 @@ app.include_router(condicion_router)
 app.include_router(consulta_router)
 app.include_router(perfil_router)
 app.include_router(regla_router)
+app.include_router(usuario_admin_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 

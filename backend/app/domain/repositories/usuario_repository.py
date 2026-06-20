@@ -13,3 +13,9 @@ class UsuarioRepository(ABC):
 
     @abstractmethod
     async def crear(self, usuario: Usuario) -> Usuario: ...
+
+    @abstractmethod
+    async def listar(self) -> list[Usuario]: ...
+
+    @abstractmethod
+    async def actualizar_rol(self, cedula: str, id_rol: int) -> Usuario | None: ...

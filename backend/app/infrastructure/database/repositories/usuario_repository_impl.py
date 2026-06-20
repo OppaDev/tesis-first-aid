@@ -33,6 +33,22 @@ class UsuarioRepositoryImpl(UsuarioRepository):
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
+    async def listar(self) -> list[Usuario]:
+        result = await self._session.execute(
+            select(UsuarioModel)
+            .options(selectinload(UsuarioModel.rol).selectinload(RolModel.permisos))
+            .order_by(UsuarioModel.cedula)
+        )
+        return [self._to_entity(m) for m in result.scalars().all()]
+
+    async def actualizar_rol(self, cedula: str, id_rol: int) -> Usuario | None:
+        model = await self._session.get(UsuarioModel, cedula)
+        if model is None:
+            return None
+        model.id_rol = id_rol
+        await self._session.commit()
+        return await self.obtener_por_cedula(cedula)
+
     async def crear(self, usuario: Usuario) -> Usuario:
         model = UsuarioModel(
             cedula=usuario.cedula,
