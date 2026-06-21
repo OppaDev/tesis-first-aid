@@ -57,6 +57,11 @@ export async function putJson<T>(ruta: string, cuerpo: unknown): Promise<T> {
   return enviarJson<T>("PUT", ruta, cuerpo);
 }
 
+/** PATCH con cuerpo JSON. */
+export async function patchJson<T>(ruta: string, cuerpo: unknown): Promise<T> {
+  return enviarJson<T>("PATCH", ruta, cuerpo);
+}
+
 async function enviarJson<T>(
   metodo: "POST" | "PUT" | "PATCH",
   ruta: string,

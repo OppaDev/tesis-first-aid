@@ -30,7 +30,7 @@ export default function Login() {
     setCargando(true);
     try {
       await iniciarSesion({ email: email.trim(), password });
-      router.replace("/consulta");
+      router.replace("/"); // index redirige según el rol (admin → panel, usuario → consulta)
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No se pudo iniciar sesión");
     } finally {

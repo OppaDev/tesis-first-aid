@@ -28,6 +28,23 @@ class EmergenciaRepositoryImpl(EmergenciaRepository):
             return None
         return self._to_entity(model)
 
+    async def listar(self) -> list[Emergencia]:
+        result = await self._session.execute(
+            select(EmergenciaModel).order_by(EmergenciaModel.id_emergencia)
+        )
+        return [
+            Emergencia(
+                id_emergencia=m.id_emergencia,
+                nombre_emergencia=m.nombre_emergencia,
+                descripcion_emergencia=m.descripcion_emergencia,
+                grupo_edad=m.grupo_edad,
+                severidad=m.severidad,
+                etiqueta=m.etiqueta,
+                evaluacion_inicial=m.evaluacion_inicial,
+            )
+            for m in result.scalars().all()
+        ]
+
     @staticmethod
     def _to_entity(model: EmergenciaModel) -> Emergencia:
         emergencia = Emergencia(

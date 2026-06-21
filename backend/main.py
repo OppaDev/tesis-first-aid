@@ -9,9 +9,11 @@ from app.infrastructure.database.models import *  # noqa: F401, F403 — registr
 from app.presentation.api.auth_router import router as auth_router
 from app.presentation.api.condicion_router import router as condicion_router
 from app.presentation.api.consulta_router import router as consulta_router
+from app.presentation.api.emergencia_router import router as emergencia_router
 from app.presentation.api.perfil_router import router as perfil_router
 from app.presentation.api.regla_router import router as regla_router
 from app.presentation.api.usuario_admin_router import router as usuario_admin_router
+from app.presentation.middleware import configurar_middlewares
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -29,9 +31,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+configurar_middlewares(app)
+
 app.include_router(auth_router)
 app.include_router(condicion_router)
 app.include_router(consulta_router)
+app.include_router(emergencia_router)
 app.include_router(perfil_router)
 app.include_router(regla_router)
 app.include_router(usuario_admin_router)

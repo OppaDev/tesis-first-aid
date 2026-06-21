@@ -1,12 +1,13 @@
-import { Redirect } from "expo-router";
+import { Href, Redirect } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-import { useAuthStore } from "@/src/store/authStore";
+import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/theme/theme";
 
 export default function Index() {
   const hidratado = useAuthStore((s) => s.hidratado);
   const token = useAuthStore((s) => s.token);
+  const rol = useAuthStore((s) => s.rol);
 
   if (!hidratado) {
     return (
@@ -16,7 +17,11 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={token ? "/consulta" : "/login"} />;
+  if (!token) {
+    return <Redirect href="/login" />;
+  }
+
+  return <Redirect href={(rol === ID_ROL_ADMIN ? "/reglas" : "/consulta") as Href} />;
 }
 
 const styles = StyleSheet.create({

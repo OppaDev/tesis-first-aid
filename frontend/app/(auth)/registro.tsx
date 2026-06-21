@@ -68,7 +68,7 @@ export default function Registro() {
         email: email.trim(),
         password,
       });
-      router.replace("/consulta");
+      router.replace("/");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No se pudo crear la cuenta");
     } finally {

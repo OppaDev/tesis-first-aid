@@ -113,6 +113,40 @@ export interface PerfilResponse {
   condiciones: CondicionPerfil[];
 }
 
+// --- Admin: emergencias (catálogo para crear reglas) ---
+export interface EmergenciaItem {
+  id_emergencia: string;
+  nombre_emergencia: string;
+  etiqueta: string;
+  severidad: string;
+}
+
+// --- Admin: reglas del motor de alertas ---
+export interface ReglaAlertaRequest {
+  id_condicion: number;
+  id_emergencia: string;
+  mensaje: string;
+  severidad: Severidad | string;
+}
+
+export interface ReglaAlertaResponse {
+  id_regla: number;
+  id_condicion: number;
+  id_emergencia: string;
+  mensaje: string;
+  severidad: string;
+}
+
+// --- Admin: usuarios ---
+export interface UsuarioAdmin {
+  cedula: string;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  id_rol: number | null;
+  nombre_rol: string | null;
+}
+
 /** Error normalizado de la API (campo `detail` de FastAPI). */
 export class ApiError extends Error {
   status: number;

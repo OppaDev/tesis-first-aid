@@ -1,0 +1,148 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import { cambiarRol, listarUsuarios } from "@/src/services/admin";
+import { ID_ROL_ADMIN } from "@/src/store/authStore";
+import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
+import { ApiError, UsuarioAdmin } from "@/src/types/api";
+import { confirmar } from "@/src/utils/confirmar";
+
+const ID_ROL_USUARIO = 2;
+
+export default function Usuarios() {
+  const [usuarios, setUsuarios] = useState<UsuarioAdmin[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const cargar = async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      setUsuarios(await listarUsuarios());
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "No se pudieron cargar los usuarios");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    cargar();
+  }, []);
+
+  const alternarRol = async (u: UsuarioAdmin) => {
+    const esAdmin = u.id_rol === ID_ROL_ADMIN;
+    const nuevoRol = esAdmin ? ID_ROL_USUARIO : ID_ROL_ADMIN;
+    const ok = await confirmar(
+      esAdmin ? "Quitar administrador" : "Hacer administrador",
+      `${u.nombres} ${u.apellidos} pasará a rol "${esAdmin ? "usuario" : "administrador"}".`,
+    );
+    if (!ok) return;
+    setError(null);
+    try {
+      await cambiarRol(u.cedula, nuevoRol);
+      await cargar();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "No se pudo cambiar el rol");
+    }
+  };
+
+  if (cargando) {
+    return (
+      <View style={styles.centro}>
+        <ActivityIndicator color={colors.primario} size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.flex}>
+      <View style={styles.cabecera}>
+        <Text style={styles.titulo}>Usuarios</Text>
+        <Text style={styles.subtitulo}>{usuarios.length} registrados</Text>
+      </View>
+
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
+      <ScrollView contentContainerStyle={styles.lista}>
+        {usuarios.map((u) => {
+          const esAdmin = u.id_rol === ID_ROL_ADMIN;
+          return (
+            <View key={u.cedula} style={styles.tarjeta}>
+              <View style={styles.info}>
+                <Text style={styles.nombre}>
+                  {u.nombres} {u.apellidos}
+                </Text>
+                <Text style={styles.dato}>{u.email}</Text>
+                <Text style={styles.dato}>CI: {u.cedula}</Text>
+              </View>
+
+              <View style={styles.derecha}>
+                <View style={[styles.rolBadge, esAdmin ? styles.rolAdmin : null]}>
+                  <Text style={[styles.rolTexto, esAdmin ? styles.rolTextoAdmin : null]}>
+                    {u.nombre_rol ?? "—"}
+                  </Text>
+                </View>
+                <Pressable onPress={() => alternarRol(u)} style={styles.boton} hitSlop={8}>
+                  <MaterialCommunityIcons
+                    name={esAdmin ? "account-arrow-down" : "shield-account"}
+                    size={18}
+                    color={colors.primario}
+                  />
+                  <Text style={styles.botonTexto}>
+                    {esAdmin ? "Quitar admin" : "Hacer admin"}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  centro: { flex: 1, alignItems: "center", justifyContent: "center" },
+  cabecera: { padding: espaciado.xl, gap: espaciado.xs },
+  titulo: { color: colors.texto, fontSize: tipografia.titulo, fontWeight: "800" },
+  subtitulo: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
+  lista: { padding: espaciado.xl, paddingTop: 0, gap: espaciado.md },
+  tarjeta: {
+    backgroundColor: colors.tarjeta,
+    borderRadius: radio.md,
+    padding: espaciado.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: espaciado.md,
+    flexWrap: "wrap",
+  },
+  info: { flex: 1, gap: espaciado.xs, minWidth: 180 },
+  nombre: { color: colors.texto, fontSize: tipografia.cuerpo, fontWeight: "700" },
+  dato: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  derecha: { alignItems: "flex-end", gap: espaciado.sm },
+  rolBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: espaciado.md,
+    borderRadius: radio.full,
+    backgroundColor: colors.superficie,
+    borderWidth: 1,
+    borderColor: colors.borde,
+  },
+  rolAdmin: { borderColor: colors.primario },
+  rolTexto: { color: colors.textoTenue, fontSize: tipografia.pequeno, fontWeight: "700" },
+  rolTextoAdmin: { color: colors.primario },
+  boton: { flexDirection: "row", alignItems: "center", gap: espaciado.xs },
+  botonTexto: { color: colors.primario, fontSize: tipografia.etiqueta, fontWeight: "600" },
+});
