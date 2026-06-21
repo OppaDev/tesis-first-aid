@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -85,6 +86,10 @@ export default function Login() {
               Regístrate
             </Link>
           </View>
+
+          <Pressable onPress={() => router.replace("/consulta")} hitSlop={8}>
+            <Text style={styles.continuar}>Continuar sin iniciar sesión</Text>
+          </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -120,6 +125,9 @@ const styles = StyleSheet.create({
   },
   formulario: {
     gap: espaciado.lg,
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
   },
   error: {
     color: colors.error,
@@ -140,4 +148,12 @@ const styles = StyleSheet.create({
     fontSize: tipografia.etiqueta,
     fontWeight: "700",
   },
+  continuar: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    fontWeight: "600",
+    textAlign: "center",
+    textDecorationLine: "underline",
+  },
 });
+

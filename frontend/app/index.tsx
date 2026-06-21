@@ -17,11 +17,12 @@ export default function Index() {
     );
   }
 
-  if (!token) {
-    return <Redirect href="/login" />;
+  // El admin va al panel; todos los demás (incluido el usuario anónimo) entran
+  // directo a la consulta: en una emergencia no se exige iniciar sesión.
+  if (token && rol === ID_ROL_ADMIN) {
+    return <Redirect href={"/reglas" as Href} />;
   }
-
-  return <Redirect href={(rol === ID_ROL_ADMIN ? "/reglas" : "/consulta") as Href} />;
+  return <Redirect href="/consulta" />;
 }
 
 const styles = StyleSheet.create({

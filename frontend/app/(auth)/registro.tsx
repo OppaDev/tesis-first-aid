@@ -199,6 +199,9 @@ const styles = StyleSheet.create({
   },
   formulario: {
     gap: espaciado.lg,
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
   },
   pista: {
     color: colors.error,

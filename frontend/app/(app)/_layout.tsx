@@ -1,17 +1,15 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/theme/theme";
 
 export default function AppLayout() {
   const token = useAuthStore((s) => s.token);
-  const hidratado = useAuthStore((s) => s.hidratado);
 
-  if (hidratado && !token) {
-    return <Redirect href="/login" />;
-  }
-
+  // Sin guard de login: la consulta es accesible para usuarios anónimos
+  // (en una emergencia no se exige iniciar sesión). La pestaña Perfil solo
+  // aparece con sesión iniciada.
   return (
     <Tabs
       screenOptions={{
@@ -37,6 +35,7 @@ export default function AppLayout() {
         name="perfil"
         options={{
           title: "Perfil",
+          href: token ? undefined : null, // oculta la pestaña si no hay sesión
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <MaterialCommunityIcons name="account" color={color} size={size} />
           ),

@@ -10,6 +10,7 @@ type NombreIcono = keyof typeof MaterialCommunityIcons.glyphMap;
 
 const ITEMS: { href: Href; label: string; icono: NombreIcono }[] = [
   { href: "/reglas" as Href, label: "Reglas", icono: "format-list-checks" },
+  { href: "/condiciones" as Href, label: "Condiciones", icono: "clipboard-pulse-outline" },
   { href: "/usuarios" as Href, label: "Usuarios", icono: "account-group" },
 ];
 

@@ -6,6 +6,8 @@ import {
   putJson,
 } from "@/src/services/api";
 import {
+  CondicionAdminRequest,
+  CondicionAdminResponse,
   ReglaAlertaRequest,
   ReglaAlertaResponse,
   UsuarioAdmin,
@@ -31,6 +33,24 @@ export function actualizarRegla(
 
 export function eliminarRegla(idRegla: number): Promise<void> {
   return del(`/admin/reglas/${idRegla}`);
+}
+
+// --- Catálogo: condiciones ---
+export function crearCondicion(
+  datos: CondicionAdminRequest,
+): Promise<CondicionAdminResponse> {
+  return postJson<CondicionAdminResponse>("/admin/condiciones", datos);
+}
+
+export function actualizarCondicion(
+  idCondicion: number,
+  datos: CondicionAdminRequest,
+): Promise<CondicionAdminResponse> {
+  return putJson<CondicionAdminResponse>(`/admin/condiciones/${idCondicion}`, datos);
+}
+
+export function eliminarCondicion(idCondicion: number): Promise<void> {
+  return del(`/admin/condiciones/${idCondicion}`);
 }
 
 // --- Usuarios ---

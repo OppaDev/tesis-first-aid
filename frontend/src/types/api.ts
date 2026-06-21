@@ -137,6 +137,20 @@ export interface ReglaAlertaResponse {
   severidad: string;
 }
 
+// --- Admin: catálogo de condiciones ---
+export interface CondicionAdminRequest {
+  nombre_condicion: string;
+  descripcion_condicion: string;
+  id_categoria: number | null;
+}
+
+export interface CondicionAdminResponse {
+  id_condicion: number;
+  nombre_condicion: string;
+  descripcion_condicion: string;
+  id_categoria: number | null;
+}
+
 // --- Admin: usuarios ---
 export interface UsuarioAdmin {
   cedula: string;

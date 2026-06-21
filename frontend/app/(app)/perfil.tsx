@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,6 +22,7 @@ import {
   eliminarPerfil,
   obtenerPerfil,
 } from "@/src/services/perfil";
+import { useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import {
   ApiError,
@@ -33,6 +35,8 @@ const TIPOS_SANGRE = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"] as const
 
 export default function Perfil() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const token = useAuthStore((s) => s.token);
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -51,6 +55,10 @@ export default function Perfil() {
 
   useEffect(() => {
     const cargar = async () => {
+      if (!token) {
+        setCargando(false);
+        return;
+      }
       setCargando(true);
       setError(null);
       try {
@@ -73,7 +81,7 @@ export default function Perfil() {
       }
     };
     cargar();
-  }, []);
+  }, [token]);
 
   const abrirEdicion = () => {
     setError(null);
@@ -176,6 +184,29 @@ export default function Perfil() {
       ],
     );
   };
+
+  if (!token) {
+    return (
+      <View style={styles.flex}>
+        <View style={[styles.cabecera, { paddingTop: insets.top + espaciado.md }]}>
+          <Text style={styles.titulo}>Mi perfil clínico</Text>
+        </View>
+        <View style={styles.vacio}>
+          <MaterialCommunityIcons
+            name="account-lock-outline"
+            size={56}
+            color={colors.textoTenue}
+          />
+          <Text style={styles.vacioTitulo}>Inicia sesión para tu perfil</Text>
+          <Text style={styles.ayuda}>
+            Con tu perfil clínico, la app te muestra alertas personalizadas durante
+            una emergencia.
+          </Text>
+          <Boton titulo="Iniciar sesión" onPress={() => router.push("/login")} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.flex}>
