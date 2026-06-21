@@ -1,0 +1,232 @@
+import { Link, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Boton } from "@/src/components/Boton";
+import { Campo } from "@/src/components/Campo";
+import { SelectorFecha } from "@/src/components/SelectorFecha";
+import { useAuthStore } from "@/src/store/authStore";
+import { colors, espaciado, tipografia } from "@/src/theme/theme";
+import { ApiError } from "@/src/types/api";
+
+function aISO(d: Date): string {
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const dia = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}
+
+export default function Registro() {
+  const router = useRouter();
+  const registrar = useAuthStore((s) => s.registrar);
+
+  const [cedula, setCedula] = useState("");
+  const [nombres, setNombres] = useState("");
+  const [apellidos, setApellidos] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState<Date | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmar, setConfirmar] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(false);
+
+  const insets = useSafeAreaInsets();
+
+  // Comparación de contraseñas en tiempo real
+  const passwordsCoinciden = password.length > 0 && password === confirmar;
+  const mostrarNoCoinciden = confirmar.length > 0 && password !== confirmar;
+
+  const enviar = async () => {
+    if (!fechaNacimiento) {
+      setError("Selecciona tu fecha de nacimiento.");
+      return;
+    }
+    if (fechaNacimiento >= new Date()) {
+      setError("La fecha de nacimiento debe ser anterior a hoy.");
+      return;
+    }
+    if (password !== confirmar) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setError(null);
+    setCargando(true);
+    try {
+      await registrar({
+        cedula: cedula.trim(),
+        nombres: nombres.trim(),
+        apellidos: apellidos.trim(),
+        fecha_nacimiento: aISO(fechaNacimiento),
+        email: email.trim(),
+        password,
+      });
+      router.replace("/consulta");
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "No se pudo crear la cuenta");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={[
+          styles.contenido,
+          { paddingTop: insets.top + espaciado.xl },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.marca}>
+          <Text style={styles.logo}>Crear cuenta</Text>
+          <Text style={styles.subtitulo}>SanFra · Primeros Auxilios</Text>
+        </View>
+
+        <View style={styles.formulario}>
+          <Campo
+            etiqueta="Cédula"
+            value={cedula}
+            onChangeText={setCedula}
+            keyboardType="number-pad"
+            placeholder="0123456789"
+            maxLength={10}
+          />
+          <Campo
+            etiqueta="Nombres"
+            value={nombres}
+            onChangeText={setNombres}
+            placeholder="Tus nombres"
+          />
+          <Campo
+            etiqueta="Apellidos"
+            value={apellidos}
+            onChangeText={setApellidos}
+            placeholder="Tus apellidos"
+          />
+          <SelectorFecha
+            etiqueta="Fecha de nacimiento"
+            valor={fechaNacimiento}
+            onChange={setFechaNacimiento}
+            maxima={new Date()}
+          />
+          <Campo
+            etiqueta="Correo electrónico"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder="usuario@correo.com"
+          />
+          <Campo
+            etiqueta="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholder="Mínimo 6 caracteres"
+          />
+          <View>
+            <Campo
+              etiqueta="Confirmar contraseña"
+              value={confirmar}
+              onChangeText={setConfirmar}
+              secureTextEntry
+              placeholder="Repite la contraseña"
+            />
+            {mostrarNoCoinciden ? (
+              <Text style={styles.pista}>Las contraseñas no coinciden</Text>
+            ) : passwordsCoinciden ? (
+              <Text style={styles.pistaOk}>Las contraseñas coinciden</Text>
+            ) : null}
+          </View>
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <Boton
+            titulo="Registrarme"
+            onPress={enviar}
+            cargando={cargando}
+            deshabilitado={!passwordsCoinciden}
+          />
+
+          <View style={styles.piePagina}>
+            <Text style={styles.pieTexto}>¿Ya tienes cuenta? </Text>
+            <Link href="/login" style={styles.enlace}>
+              Inicia sesión
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor: colors.fondo,
+  },
+  contenido: {
+    flexGrow: 1,
+    paddingHorizontal: espaciado.xl,
+    paddingBottom: espaciado.xxl * 2,
+    gap: espaciado.xl,
+  },
+  marca: {
+    alignItems: "center",
+    gap: espaciado.xs,
+  },
+  logo: {
+    color: colors.texto,
+    fontSize: tipografia.titulo,
+    fontWeight: "800",
+  },
+  subtitulo: {
+    color: colors.primario,
+    fontSize: tipografia.etiqueta,
+    fontWeight: "600",
+  },
+  formulario: {
+    gap: espaciado.lg,
+  },
+  pista: {
+    color: colors.error,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
+  },
+  pistaOk: {
+    color: colors.exito,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
+  },
+  error: {
+    color: colors.error,
+    fontSize: tipografia.etiqueta,
+  },
+  piePagina: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: espaciado.sm,
+  },
+  pieTexto: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+  },
+  enlace: {
+    color: colors.primario,
+    fontSize: tipografia.etiqueta,
+    fontWeight: "700",
+  },
+});
