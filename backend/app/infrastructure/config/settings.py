@@ -19,5 +19,9 @@ class Settings(BaseSettings):
     asr_compute_type: str = "int8"
     asr_idioma: str = "es"
 
+    # Rate limiting (slowapi). Límite global por IP y uno más estricto para el login.
+    rate_limit_default: str = "120/minute"
+    rate_limit_login: str = "10/minute"
+
 
 settings = Settings()

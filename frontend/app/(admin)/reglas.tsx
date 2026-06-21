@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
+import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
   actualizarRegla,
@@ -39,6 +40,10 @@ export default function Reglas() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const LIMITE = 20;
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+
   // Formulario
   const [modal, setModal] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
@@ -53,12 +58,17 @@ export default function Reglas() {
     setCargando(true);
     setError(null);
     try {
-      const [r, e, cat] = await Promise.all([
-        listarReglas(),
+      const [pag, e, cat] = await Promise.all([
+        listarReglas(LIMITE, offset),
         listarEmergencias(),
         listarCatalogo(),
       ]);
-      setReglas(r);
+      if (pag.items.length === 0 && offset > 0) {
+        setOffset(Math.max(0, offset - LIMITE)); // página vacía tras borrar → retrocede
+        return;
+      }
+      setReglas(pag.items);
+      setTotal(pag.total);
       setEmergencias(e);
       setCondiciones(cat.flatMap((c) => c.condiciones));
     } catch (err) {
@@ -70,7 +80,7 @@ export default function Reglas() {
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [offset]);
 
   const nombreCondicion = (id: number) =>
     condiciones.find((c) => c.id_condicion === id)?.nombre_condicion ?? `#${id}`;
@@ -223,6 +233,7 @@ export default function Reglas() {
           keyExtractor={(r) => String(r.id_regla)}
           vacioTexto="No hay reglas configuradas"
         />
+        <Paginador offset={offset} limit={LIMITE} total={total} onCambiar={setOffset} />
       </View>
 
       <Modal visible={modal} transparent animationType="fade" onRequestClose={() => setModal(false)}>

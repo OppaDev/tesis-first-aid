@@ -8,14 +8,20 @@ import {
 import {
   CondicionAdminRequest,
   CondicionAdminResponse,
+  Pagina,
   ReglaAlertaRequest,
   ReglaAlertaResponse,
   UsuarioAdmin,
 } from "@/src/types/api";
 
 // --- Reglas del motor de alertas ---
-export function listarReglas(): Promise<ReglaAlertaResponse[]> {
-  return getJson<ReglaAlertaResponse[]>("/admin/reglas");
+export function listarReglas(
+  limit: number,
+  offset: number,
+): Promise<Pagina<ReglaAlertaResponse>> {
+  return getJson<Pagina<ReglaAlertaResponse>>(
+    `/admin/reglas?limit=${limit}&offset=${offset}`,
+  );
 }
 
 export function crearRegla(
@@ -54,8 +60,13 @@ export function eliminarCondicion(idCondicion: number): Promise<void> {
 }
 
 // --- Usuarios ---
-export function listarUsuarios(): Promise<UsuarioAdmin[]> {
-  return getJson<UsuarioAdmin[]>("/admin/usuarios");
+export function listarUsuarios(
+  limit: number,
+  offset: number,
+): Promise<Pagina<UsuarioAdmin>> {
+  return getJson<Pagina<UsuarioAdmin>>(
+    `/admin/usuarios?limit=${limit}&offset=${offset}`,
+  );
 }
 
 export function cambiarRol(

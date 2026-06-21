@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.regla_alerta import ReglaAlerta
@@ -16,11 +16,20 @@ class AlertaReglaRepositoryImpl(AlertaReglaRepository):
         )
         return [self._to_entity(m) for m in result.scalars().all()]
 
-    async def listar(self) -> list[ReglaAlerta]:
+    async def listar(self, limit: int, offset: int) -> list[ReglaAlerta]:
         result = await self._session.execute(
-            select(AlertaReglaModel).order_by(AlertaReglaModel.id_regla)
+            select(AlertaReglaModel)
+            .order_by(AlertaReglaModel.id_regla)
+            .limit(limit)
+            .offset(offset)
         )
         return [self._to_entity(m) for m in result.scalars().all()]
+
+    async def contar(self) -> int:
+        result = await self._session.execute(
+            select(func.count()).select_from(AlertaReglaModel)
+        )
+        return result.scalar_one()
 
     async def obtener_por_id(self, id_regla: int) -> ReglaAlerta | None:
         model = await self._session.get(AlertaReglaModel, id_regla)

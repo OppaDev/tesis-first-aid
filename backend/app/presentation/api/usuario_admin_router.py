@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.dtos.paginacion import Pagina
 from app.application.dtos.perfil_clinico_dto import (
     PerfilClinicoPatchDTO,
     PerfilClinicoRequestDTO,
@@ -27,10 +28,14 @@ router = APIRouter(
 )
 
 
-@router.get("", response_model=list[UsuarioAdminResponseDTO])
-async def listar(db: AsyncSession = Depends(get_db)):
+@router.get("", response_model=Pagina[UsuarioAdminResponseDTO])
+async def listar(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+):
     repo = UsuarioRepositoryImpl(db)
-    return await ListarUsuariosUseCase(repo).ejecutar()
+    return await ListarUsuariosUseCase(repo).ejecutar(limit, offset)
 
 
 @router.get("/{cedula}", response_model=UsuarioAdminResponseDTO)

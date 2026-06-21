@@ -9,8 +9,12 @@ class AlertaReglaRepository(ABC):
         """Devuelve todas las reglas de alerta asociadas a una emergencia."""
 
     @abstractmethod
-    async def listar(self) -> list[ReglaAlerta]:
-        """Devuelve todas las reglas del motor de alertas."""
+    async def listar(self, limit: int, offset: int) -> list[ReglaAlerta]:
+        """Devuelve una página de reglas del motor de alertas."""
+
+    @abstractmethod
+    async def contar(self) -> int:
+        """Devuelve el total de reglas (para la paginación)."""
 
     @abstractmethod
     async def obtener_por_id(self, id_regla: int) -> ReglaAlerta | None:

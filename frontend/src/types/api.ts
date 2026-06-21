@@ -161,6 +161,14 @@ export interface UsuarioAdmin {
   nombre_rol: string | null;
 }
 
+/** Respuesta paginada genérica. */
+export interface Pagina<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 /** Error normalizado de la API (campo `detail` de FastAPI). */
 export class ApiError extends Error {
   status: number;

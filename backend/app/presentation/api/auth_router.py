@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dtos.auth_dto import (
@@ -10,8 +10,10 @@ from app.application.dtos.auth_dto import (
 from app.application.use_cases.login_usuario import LoginUsuarioUseCase
 from app.application.use_cases.registrar_usuario import RegistrarUsuarioUseCase
 from app.domain.exceptions import ValidationError
+from app.infrastructure.config import settings
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.repositories.usuario_repository_impl import UsuarioRepositoryImpl
+from app.presentation.middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -26,7 +28,8 @@ async def registro(dto: RegistroRequestDTO, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponseDTO)
-async def login(dto: LoginRequestDTO, db: AsyncSession = Depends(get_db)):
+@limiter.limit(settings.rate_limit_login)
+async def login(request: Request, dto: LoginRequestDTO, db: AsyncSession = Depends(get_db)):
     try:
         repo = UsuarioRepositoryImpl(db)
         return await LoginUsuarioUseCase(repo).ejecutar(dto)

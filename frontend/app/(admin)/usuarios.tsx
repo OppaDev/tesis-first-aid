@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 
+import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import { cambiarRol, listarUsuarios } from "@/src/services/admin";
 import { ID_ROL_ADMIN } from "@/src/store/authStore";
@@ -22,11 +23,21 @@ export default function Usuarios() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const LIMITE = 20;
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+
   const cargar = async () => {
     setCargando(true);
     setError(null);
     try {
-      setUsuarios(await listarUsuarios());
+      const pag = await listarUsuarios(LIMITE, offset);
+      if (pag.items.length === 0 && offset > 0) {
+        setOffset(Math.max(0, offset - LIMITE));
+        return;
+      }
+      setUsuarios(pag.items);
+      setTotal(pag.total);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "No se pudieron cargar los usuarios");
     } finally {
@@ -36,7 +47,7 @@ export default function Usuarios() {
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [offset]);
 
   const alternarRol = async (u: UsuarioAdmin) => {
     const esAdmin = u.id_rol === ID_ROL_ADMIN;
@@ -139,6 +150,7 @@ export default function Usuarios() {
           keyExtractor={(u) => u.cedula}
           vacioTexto="No hay usuarios registrados"
         />
+        <Paginador offset={offset} limit={LIMITE} total={total} onCambiar={setOffset} />
       </View>
     </View>
   );

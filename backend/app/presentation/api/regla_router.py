@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.dtos.paginacion import Pagina
 from app.application.dtos.regla_alerta_dto import (
     ReglaAlertaPatchDTO,
     ReglaAlertaRequestDTO,
@@ -33,10 +34,14 @@ def _traducir_integrity_error(error: IntegrityError) -> HTTPException:
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detalle)
 
 
-@router.get("", response_model=list[ReglaAlertaResponseDTO])
-async def listar(db: AsyncSession = Depends(get_db)):
+@router.get("", response_model=Pagina[ReglaAlertaResponseDTO])
+async def listar(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+):
     repo = AlertaReglaRepositoryImpl(db)
-    return await ListarReglasAlertaUseCase(repo).ejecutar()
+    return await ListarReglasAlertaUseCase(repo).ejecutar(limit, offset)
 
 
 @router.get("/{id_regla}", response_model=ReglaAlertaResponseDTO)
