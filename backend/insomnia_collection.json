@@ -59,6 +59,13 @@
       "metaSortKey": 1
     },
     {
+      "_id": "fld_admin_catalogo",
+      "_type": "request_group",
+      "parentId": "wrk_firstaid",
+      "name": "Admin - Catálogo",
+      "metaSortKey": 2
+    },
+    {
       "_id": "req_usuarios_listar",
       "_type": "request",
       "parentId": "fld_admin_usuarios",
@@ -70,6 +77,53 @@
       ],
       "body": {},
       "metaSortKey": -6
+    },
+    {
+      "_id": "req_usuarios_crear",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Crear usuario",
+      "method": "POST",
+      "url": "{{ _.base_url }}/admin/usuarios",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cedula\": \"1710034065\",\n  \"nombres\": \"Maria\",\n  \"apellidos\": \"Perez\",\n  \"fecha_nacimiento\": \"1990-03-12\",\n  \"email\": \"maria@correo.com\",\n  \"password\": \"clave123\",\n  \"id_rol\": 2\n}"
+      },
+      "metaSortKey": -5.5
+    },
+    {
+      "_id": "req_usuarios_actualizar",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Editar datos de usuario (PUT)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/admin/usuarios/1710034065",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombres\": \"Maria Fernanda\",\n  \"apellidos\": \"Perez\",\n  \"email\": \"maria.f@correo.com\"\n}"
+      },
+      "metaSortKey": -4.5
+    },
+    {
+      "_id": "req_usuarios_eliminar",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Eliminar usuario",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/admin/usuarios/1710034065",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -0.5
     },
     {
       "_id": "req_usuarios_obtener",
@@ -434,6 +488,111 @@
       ],
       "body": {},
       "metaSortKey": -1
+    },
+    {
+      "_id": "req_emergencias_listar",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Listar emergencias",
+      "method": "GET",
+      "url": "{{ _.base_url }}/emergencias",
+      "headers": [],
+      "body": {},
+      "metaSortKey": -10
+    },
+    {
+      "_id": "req_condicion_crear",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Crear condición",
+      "method": "POST",
+      "url": "{{ _.base_url }}/admin/condiciones",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre_condicion\": \"Insuficiencia renal\",\n  \"descripcion_condicion\": \"Función renal reducida\",\n  \"id_categoria\": 1\n}"
+      },
+      "metaSortKey": -9
+    },
+    {
+      "_id": "req_condicion_actualizar",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Editar condición (PUT)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/admin/condiciones/1",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre_condicion\": \"Diabetes\",\n  \"descripcion_condicion\": \"Enfermedad crónica del metabolismo de la glucosa\",\n  \"id_categoria\": 1\n}"
+      },
+      "metaSortKey": -8
+    },
+    {
+      "_id": "req_condicion_eliminar",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Eliminar condición (cascadea reglas y perfiles)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/admin/condiciones/99",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -7
+    },
+    {
+      "_id": "req_categoria_crear",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Crear categoría",
+      "method": "POST",
+      "url": "{{ _.base_url }}/admin/categorias",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre_categoria\": \"Salud mental\"\n}"
+      },
+      "metaSortKey": -6
+    },
+    {
+      "_id": "req_categoria_actualizar",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Editar categoría (PUT)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/admin/categorias/1",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nombre_categoria\": \"Enfermedades crónicas\"\n}"
+      },
+      "metaSortKey": -5
+    },
+    {
+      "_id": "req_categoria_eliminar",
+      "_type": "request",
+      "parentId": "fld_admin_catalogo",
+      "name": "Eliminar categoría (falla si tiene condiciones)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/admin/categorias/99",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -4
     }
   ]
 }

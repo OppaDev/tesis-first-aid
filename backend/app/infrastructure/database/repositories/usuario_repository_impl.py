@@ -57,6 +57,24 @@ class UsuarioRepositoryImpl(UsuarioRepository):
         await self._session.commit()
         return await self.obtener_por_cedula(cedula)
 
+    async def actualizar_datos(
+        self, cedula: str, nombres: str, apellidos: str, email: str
+    ) -> Usuario | None:
+        model = await self._session.get(UsuarioModel, cedula)
+        if model is None:
+            return None
+        model.nombres = nombres
+        model.apellidos = apellidos
+        model.email = email
+        await self._session.commit()
+        return await self.obtener_por_cedula(cedula)
+
+    async def eliminar(self, cedula: str) -> None:
+        model = await self._session.get(UsuarioModel, cedula)
+        if model is not None:
+            await self._session.delete(model)
+            await self._session.commit()
+
     async def contar_por_rol(self, id_rol: int) -> int:
         result = await self._session.execute(
             select(func.count()).select_from(UsuarioModel).where(UsuarioModel.id_rol == id_rol)

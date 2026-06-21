@@ -6,8 +6,12 @@ import {
   putJson,
 } from "@/src/services/api";
 import {
+  ActualizarUsuarioRequest,
+  CategoriaAdminRequest,
+  CategoriaAdminResponse,
   CondicionAdminRequest,
   CondicionAdminResponse,
+  CrearUsuarioRequest,
   Pagina,
   ReglaAlertaRequest,
   ReglaAlertaResponse,
@@ -59,6 +63,24 @@ export function eliminarCondicion(idCondicion: number): Promise<void> {
   return del(`/admin/condiciones/${idCondicion}`);
 }
 
+// --- Catálogo: categorías ---
+export function crearCategoria(
+  datos: CategoriaAdminRequest,
+): Promise<CategoriaAdminResponse> {
+  return postJson<CategoriaAdminResponse>("/admin/categorias", datos);
+}
+
+export function actualizarCategoria(
+  idCategoria: number,
+  datos: CategoriaAdminRequest,
+): Promise<CategoriaAdminResponse> {
+  return putJson<CategoriaAdminResponse>(`/admin/categorias/${idCategoria}`, datos);
+}
+
+export function eliminarCategoria(idCategoria: number): Promise<void> {
+  return del(`/admin/categorias/${idCategoria}`);
+}
+
 // --- Usuarios ---
 export function listarUsuarios(
   limit: number,
@@ -76,4 +98,19 @@ export function cambiarRol(
   return patchJson<UsuarioAdmin>(`/admin/usuarios/${cedula}/rol`, {
     id_rol: idRol,
   });
+}
+
+export function crearUsuario(datos: CrearUsuarioRequest): Promise<UsuarioAdmin> {
+  return postJson<UsuarioAdmin>("/admin/usuarios", datos);
+}
+
+export function actualizarUsuario(
+  cedula: string,
+  datos: ActualizarUsuarioRequest,
+): Promise<UsuarioAdmin> {
+  return putJson<UsuarioAdmin>(`/admin/usuarios/${cedula}`, datos);
+}
+
+export function eliminarUsuario(cedula: string): Promise<void> {
+  return del(`/admin/usuarios/${cedula}`);
 }

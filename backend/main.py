@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.infrastructure.database.database import engine
 from app.infrastructure.database.models import *  # noqa: F401, F403 — registra todos los modelos en Base.metadata
 from app.presentation.api.auth_router import router as auth_router
+from app.presentation.api.categoria_admin_router import router as categoria_admin_router
 from app.presentation.api.condicion_admin_router import router as condicion_admin_router
 from app.presentation.api.condicion_router import router as condicion_router
 from app.presentation.api.consulta_router import router as consulta_router
@@ -37,6 +38,7 @@ configurar_middlewares(app)
 app.include_router(auth_router)
 app.include_router(condicion_router)
 app.include_router(condicion_admin_router)
+app.include_router(categoria_admin_router)
 app.include_router(consulta_router)
 app.include_router(emergencia_router)
 app.include_router(perfil_router)

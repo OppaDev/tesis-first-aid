@@ -1,12 +1,30 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from datetime import date
+
+from pydantic import BaseModel, EmailStr, Field
 
 from app.domain.entities.usuario import Usuario
 
 
 class CambiarRolRequestDTO(BaseModel):
     id_rol: int
+
+
+class CrearUsuarioAdminDTO(BaseModel):
+    cedula: str = Field(..., min_length=10, max_length=11)
+    nombres: str = Field(..., min_length=2)
+    apellidos: str = Field(..., min_length=2)
+    fecha_nacimiento: date
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    id_rol: int = 2  # por defecto, usuario
+
+
+class ActualizarUsuarioAdminDTO(BaseModel):
+    nombres: str = Field(..., min_length=2)
+    apellidos: str = Field(..., min_length=2)
+    email: EmailStr
 
 
 class UsuarioAdminResponseDTO(BaseModel):

@@ -151,6 +151,15 @@ export interface CondicionAdminResponse {
   id_categoria: number | null;
 }
 
+export interface CategoriaAdminRequest {
+  nombre_categoria: string;
+}
+
+export interface CategoriaAdminResponse {
+  id_categoria: number;
+  nombre_categoria: string;
+}
+
 // --- Admin: usuarios ---
 export interface UsuarioAdmin {
   cedula: string;
@@ -159,6 +168,22 @@ export interface UsuarioAdmin {
   email: string;
   id_rol: number | null;
   nombre_rol: string | null;
+}
+
+export interface CrearUsuarioRequest {
+  cedula: string;
+  nombres: string;
+  apellidos: string;
+  fecha_nacimiento: string; // YYYY-MM-DD
+  email: string;
+  password: string;
+  id_rol: number;
+}
+
+export interface ActualizarUsuarioRequest {
+  nombres: string;
+  apellidos: string;
+  email: string;
 }
 
 /** Respuesta paginada genérica. */

@@ -2,7 +2,24 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from app.domain.entities.categoria import Categoria
 from app.domain.entities.condicion import Condicion
+
+
+class CategoriaRequestDTO(BaseModel):
+    nombre_categoria: str = Field(..., min_length=1)
+
+
+class CategoriaAdminDTO(BaseModel):
+    id_categoria: int
+    nombre_categoria: str
+
+    @classmethod
+    def desde_entidad(cls, categoria: Categoria) -> "CategoriaAdminDTO":
+        return cls(
+            id_categoria=categoria.id_categoria,
+            nombre_categoria=categoria.nombre_categoria,
+        )
 
 
 class CondicionRequestDTO(BaseModel):

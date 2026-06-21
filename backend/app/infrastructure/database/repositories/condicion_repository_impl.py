@@ -51,6 +51,30 @@ class CondicionRepositoryImpl(CondicionRepository):
             await self._session.delete(model)
             await self._session.commit()
 
+    async def obtener_categoria(self, id_categoria: int) -> Categoria | None:
+        model = await self._session.get(CategoriaModel, id_categoria)
+        return self._categoria_simple(model) if model else None
+
+    async def crear_categoria(self, categoria: Categoria) -> Categoria:
+        model = CategoriaModel(nombre_categoria=categoria.nombre_categoria)
+        self._session.add(model)
+        await self._session.commit()
+        await self._session.refresh(model)
+        return self._categoria_simple(model)
+
+    async def actualizar_categoria(self, categoria: Categoria) -> Categoria:
+        model = await self._session.get(CategoriaModel, categoria.id_categoria)
+        model.nombre_categoria = categoria.nombre_categoria
+        await self._session.commit()
+        await self._session.refresh(model)
+        return self._categoria_simple(model)
+
+    async def eliminar_categoria(self, id_categoria: int) -> None:
+        model = await self._session.get(CategoriaModel, id_categoria)
+        if model is not None:
+            await self._session.delete(model)
+            await self._session.commit()
+
     @staticmethod
     def _condicion_to_entity(model: CondicionModel) -> Condicion:
         return Condicion(
@@ -58,6 +82,13 @@ class CondicionRepositoryImpl(CondicionRepository):
             id_categoria=model.id_categoria,
             nombre_condicion=model.nombre_condicion,
             descripcion_condicion=model.descripcion_condicion,
+        )
+
+    @staticmethod
+    def _categoria_simple(model: CategoriaModel) -> Categoria:
+        return Categoria(
+            id_categoria=model.id_categoria,
+            nombre_categoria=model.nombre_categoria,
         )
 
     @staticmethod
