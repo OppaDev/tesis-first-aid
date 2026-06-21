@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
+import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
   actualizarRegla,
   crearRegla,
@@ -138,6 +139,60 @@ export default function Reglas() {
     }
   };
 
+  const columnas: ColumnaTabla<ReglaAlertaResponse>[] = [
+    {
+      titulo: "Condición",
+      flex: 1.3,
+      render: (r) => (
+        <Text style={styles.celdaTexto} numberOfLines={2}>
+          {nombreCondicion(r.id_condicion)}
+        </Text>
+      ),
+    },
+    {
+      titulo: "Emergencia",
+      flex: 1.3,
+      render: (r) => (
+        <Text style={styles.celdaTexto} numberOfLines={2}>
+          {nombreEmergencia(r.id_emergencia)}
+        </Text>
+      ),
+    },
+    {
+      titulo: "Severidad",
+      flex: 0.8,
+      render: (r) => (
+        <Text style={[styles.badge, { color: colorSeveridad(r.severidad) }]}>
+          {r.severidad.toUpperCase()}
+        </Text>
+      ),
+    },
+    {
+      titulo: "Mensaje",
+      flex: 2.2,
+      render: (r) => (
+        <Text style={styles.celdaTexto} numberOfLines={3}>
+          {r.mensaje}
+        </Text>
+      ),
+    },
+    {
+      titulo: "Acciones",
+      flex: 1,
+      alinear: "flex-end",
+      render: (r) => (
+        <View style={styles.accionesCelda}>
+          <Pressable onPress={() => abrirEditar(r)} hitSlop={8}>
+            <MaterialCommunityIcons name="pencil" size={18} color={colors.primario} />
+          </Pressable>
+          <Pressable onPress={() => borrar(r)} hitSlop={8}>
+            <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.error} />
+          </Pressable>
+        </View>
+      ),
+    },
+  ];
+
   if (cargando) {
     return (
       <View style={styles.centro}>
@@ -161,32 +216,14 @@ export default function Reglas() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <ScrollView contentContainerStyle={styles.lista}>
-        {reglas.map((r) => {
-          const color = colorSeveridad(r.severidad);
-          return (
-            <View key={r.id_regla} style={[styles.tarjeta, { borderLeftColor: color }]}>
-              <View style={styles.tarjetaCabecera}>
-                <Text style={styles.cruce} numberOfLines={1}>
-                  {nombreCondicion(r.id_condicion)} → {nombreEmergencia(r.id_emergencia)}
-                </Text>
-                <Text style={[styles.badge, { color }]}>{r.severidad.toUpperCase()}</Text>
-              </View>
-              <Text style={styles.mensaje}>{r.mensaje}</Text>
-              <View style={styles.acciones}>
-                <Pressable onPress={() => abrirEditar(r)} style={styles.accion} hitSlop={8}>
-                  <MaterialCommunityIcons name="pencil" size={18} color={colors.primario} />
-                  <Text style={styles.accionTexto}>Editar</Text>
-                </Pressable>
-                <Pressable onPress={() => borrar(r)} style={styles.accion} hitSlop={8}>
-                  <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.error} />
-                  <Text style={[styles.accionTexto, { color: colors.error }]}>Eliminar</Text>
-                </Pressable>
-              </View>
-            </View>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.tablaWrap}>
+        <Tabla
+          columnas={columnas}
+          datos={reglas}
+          keyExtractor={(r) => String(r.id_regla)}
+          vacioTexto="No hay reglas configuradas"
+        />
+      </View>
 
       <Modal visible={modal} transparent animationType="fade" onRequestClose={() => setModal(false)}>
         <View style={styles.overlay}>
@@ -298,26 +335,10 @@ const styles = StyleSheet.create({
   },
   nuevoTexto: { color: colors.sobrePrimario, fontWeight: "800" },
   error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
-  lista: { padding: espaciado.xl, paddingTop: 0, gap: espaciado.md },
-  tarjeta: {
-    backgroundColor: colors.tarjeta,
-    borderRadius: radio.md,
-    borderLeftWidth: 4,
-    padding: espaciado.lg,
-    gap: espaciado.sm,
-  },
-  tarjetaCabecera: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: espaciado.sm,
-  },
-  cruce: { flex: 1, color: colors.texto, fontSize: tipografia.cuerpo, fontWeight: "700" },
+  tablaWrap: { flex: 1, paddingHorizontal: espaciado.xl, paddingBottom: espaciado.xl },
+  celdaTexto: { color: colors.texto, fontSize: tipografia.etiqueta, lineHeight: 18 },
   badge: { fontSize: tipografia.pequeno, fontWeight: "800" },
-  mensaje: { color: colors.texto, fontSize: tipografia.etiqueta, lineHeight: 20 },
-  acciones: { flexDirection: "row", gap: espaciado.lg, marginTop: espaciado.xs },
-  accion: { flexDirection: "row", alignItems: "center", gap: espaciado.xs },
-  accionTexto: { color: colors.primario, fontSize: tipografia.etiqueta, fontWeight: "600" },
+  accionesCelda: { flexDirection: "row", gap: espaciado.lg },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",

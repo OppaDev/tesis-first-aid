@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 
+import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import { cambiarRol, listarUsuarios } from "@/src/services/admin";
 import { ID_ROL_ADMIN } from "@/src/store/authStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
@@ -55,6 +55,66 @@ export default function Usuarios() {
     }
   };
 
+  const columnas: ColumnaTabla<UsuarioAdmin>[] = [
+    {
+      titulo: "Nombre",
+      flex: 1.6,
+      render: (u) => (
+        <Text style={styles.celdaFuerte} numberOfLines={1}>
+          {u.nombres} {u.apellidos}
+        </Text>
+      ),
+    },
+    {
+      titulo: "Correo",
+      flex: 1.6,
+      render: (u) => (
+        <Text style={styles.celdaTexto} numberOfLines={1}>
+          {u.email}
+        </Text>
+      ),
+    },
+    {
+      titulo: "Cédula",
+      flex: 1,
+      render: (u) => <Text style={styles.celdaTexto}>{u.cedula}</Text>,
+    },
+    {
+      titulo: "Rol",
+      flex: 0.9,
+      render: (u) => {
+        const esAdmin = u.id_rol === ID_ROL_ADMIN;
+        return (
+          <View style={[styles.rolBadge, esAdmin ? styles.rolAdmin : null]}>
+            <Text style={[styles.rolTexto, esAdmin ? styles.rolTextoAdmin : null]}>
+              {u.nombre_rol ?? "—"}
+            </Text>
+          </View>
+        );
+      },
+    },
+    {
+      titulo: "Acciones",
+      flex: 1.3,
+      alinear: "flex-end",
+      render: (u) => {
+        const esAdmin = u.id_rol === ID_ROL_ADMIN;
+        return (
+          <Pressable onPress={() => alternarRol(u)} style={styles.accion} hitSlop={8}>
+            <MaterialCommunityIcons
+              name={esAdmin ? "account-arrow-down" : "shield-account"}
+              size={18}
+              color={colors.primario}
+            />
+            <Text style={styles.accionTexto}>
+              {esAdmin ? "Quitar admin" : "Hacer admin"}
+            </Text>
+          </Pressable>
+        );
+      },
+    },
+  ];
+
   if (cargando) {
     return (
       <View style={styles.centro}>
@@ -72,40 +132,14 @@ export default function Usuarios() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <ScrollView contentContainerStyle={styles.lista}>
-        {usuarios.map((u) => {
-          const esAdmin = u.id_rol === ID_ROL_ADMIN;
-          return (
-            <View key={u.cedula} style={styles.tarjeta}>
-              <View style={styles.info}>
-                <Text style={styles.nombre}>
-                  {u.nombres} {u.apellidos}
-                </Text>
-                <Text style={styles.dato}>{u.email}</Text>
-                <Text style={styles.dato}>CI: {u.cedula}</Text>
-              </View>
-
-              <View style={styles.derecha}>
-                <View style={[styles.rolBadge, esAdmin ? styles.rolAdmin : null]}>
-                  <Text style={[styles.rolTexto, esAdmin ? styles.rolTextoAdmin : null]}>
-                    {u.nombre_rol ?? "—"}
-                  </Text>
-                </View>
-                <Pressable onPress={() => alternarRol(u)} style={styles.boton} hitSlop={8}>
-                  <MaterialCommunityIcons
-                    name={esAdmin ? "account-arrow-down" : "shield-account"}
-                    size={18}
-                    color={colors.primario}
-                  />
-                  <Text style={styles.botonTexto}>
-                    {esAdmin ? "Quitar admin" : "Hacer admin"}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.tablaWrap}>
+        <Tabla
+          columnas={columnas}
+          datos={usuarios}
+          keyExtractor={(u) => u.cedula}
+          vacioTexto="No hay usuarios registrados"
+        />
+      </View>
     </View>
   );
 }
@@ -117,21 +151,9 @@ const styles = StyleSheet.create({
   titulo: { color: colors.texto, fontSize: tipografia.titulo, fontWeight: "800" },
   subtitulo: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
   error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
-  lista: { padding: espaciado.xl, paddingTop: 0, gap: espaciado.md },
-  tarjeta: {
-    backgroundColor: colors.tarjeta,
-    borderRadius: radio.md,
-    padding: espaciado.lg,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: espaciado.md,
-    flexWrap: "wrap",
-  },
-  info: { flex: 1, gap: espaciado.xs, minWidth: 180 },
-  nombre: { color: colors.texto, fontSize: tipografia.cuerpo, fontWeight: "700" },
-  dato: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
-  derecha: { alignItems: "flex-end", gap: espaciado.sm },
+  tablaWrap: { flex: 1, paddingHorizontal: espaciado.xl, paddingBottom: espaciado.xl },
+  celdaTexto: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  celdaFuerte: { color: colors.texto, fontSize: tipografia.etiqueta, fontWeight: "700" },
   rolBadge: {
     paddingVertical: 2,
     paddingHorizontal: espaciado.md,
@@ -143,6 +165,6 @@ const styles = StyleSheet.create({
   rolAdmin: { borderColor: colors.primario },
   rolTexto: { color: colors.textoTenue, fontSize: tipografia.pequeno, fontWeight: "700" },
   rolTextoAdmin: { color: colors.primario },
-  boton: { flexDirection: "row", alignItems: "center", gap: espaciado.xs },
-  botonTexto: { color: colors.primario, fontSize: tipografia.etiqueta, fontWeight: "600" },
+  accion: { flexDirection: "row", alignItems: "center", gap: espaciado.xs },
+  accionTexto: { color: colors.primario, fontSize: tipografia.etiqueta, fontWeight: "600" },
 });
