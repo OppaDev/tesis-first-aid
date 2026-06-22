@@ -93,8 +93,12 @@ class UsuarioRepositoryImpl(UsuarioRepository):
         )
         self._session.add(model)
         await self._session.commit()
-        await self._session.refresh(model)
-        return self._to_entity(model)
+        # Re-consulta con el rol cargado (selectinload). NO usar _to_entity sobre el
+        # modelo recién insertado: acceder a model.rol dispararía un lazy-load en
+        # contexto async (MissingGreenlet).
+        creado = await self.obtener_por_cedula(usuario.cedula)
+        assert creado is not None
+        return creado
 
     @staticmethod
     def _to_entity(model: UsuarioModel) -> Usuario:

@@ -239,6 +239,9 @@ const styles = StyleSheet.create({
     borderRadius: radio.lg,
     padding: espaciado.lg,
     gap: espaciado.md,
+    width: "100%",
+    maxWidth: 420,
+    alignSelf: "center",
   },
   tituloModal: {
     color: colors.texto,
