@@ -3,16 +3,9 @@ import { Image } from "expo-image";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { API_URL } from "@/src/services/api";
+import { IMAGENES_PROTOCOLOS } from "@/src/data/imagenesProtocolos";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { Protocolo } from "@/src/types/api";
-
-function urlImagen(imagen: string): string {
-  if (imagen.startsWith("http")) {
-    return imagen;
-  }
-  return `${API_URL}${imagen.startsWith("/") ? "" : "/"}${imagen}`;
-}
 
 export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   const porId = useMemo(() => {
@@ -61,6 +54,7 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   const sigNo = paso.paso?.paso_siguiente_no ?? null;
   const anexo = paso.paso?.anexo_si ?? null;
   const esFin = !esDecision && !existe(sigSi);
+  const fuenteImagen = paso.imagen ? IMAGENES_PROTOCOLOS[paso.imagen] : undefined;
 
   return (
     <View style={styles.contenedor}>
@@ -97,9 +91,9 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
           </View>
         ) : null}
 
-        {paso.imagen ? (
+        {fuenteImagen ? (
           <Image
-            source={{ uri: urlImagen(paso.imagen) }}
+            source={fuenteImagen}
             style={styles.imagen}
             contentFit="contain"
           />

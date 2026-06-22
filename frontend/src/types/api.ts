@@ -110,6 +110,7 @@ export interface PerfilResponse {
   altura_cm: number;
   peso_kg: number;
   imc: number | null;
+  edad: number | null;
   condiciones: CondicionPerfil[];
 }
 

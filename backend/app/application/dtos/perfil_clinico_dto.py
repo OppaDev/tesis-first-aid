@@ -41,6 +41,7 @@ class PerfilClinicoResponseDTO(BaseModel):
     altura_cm: float
     peso_kg: float
     imc: float | None = None
+    edad: int | None = None  # se completa en la capa de presentación desde el usuario
     condiciones: list[CondicionResponseDTO] = []
 
     @classmethod

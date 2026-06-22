@@ -276,6 +276,9 @@ function VistaPerfil({
   return (
     <View style={styles.bloque}>
       <View style={styles.tarjeta}>
+        {perfil.edad != null ? (
+          <Dato etiqueta="Edad" valor={`${perfil.edad} años`} />
+        ) : null}
         <Dato etiqueta="Género" valor={perfil.genero} />
         <Dato etiqueta="Tipo de sangre" valor={perfil.tipo_sangre} />
         <Dato etiqueta="Altura" valor={`${perfil.altura_cm} cm`} />

@@ -28,7 +28,9 @@ async def crear(
 ):
     try:
         repo = PerfilClinicoRepositoryImpl(db)
-        return await CrearPerfilClinicoUseCase(repo).ejecutar(usuario.cedula, dto)
+        respuesta = await CrearPerfilClinicoUseCase(repo).ejecutar(usuario.cedula, dto)
+        respuesta.edad = usuario.edad
+        return respuesta
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -40,7 +42,9 @@ async def obtener(
 ):
     try:
         repo = PerfilClinicoRepositoryImpl(db)
-        return await ObtenerPerfilClinicoUseCase(repo).ejecutar(usuario.cedula)
+        respuesta = await ObtenerPerfilClinicoUseCase(repo).ejecutar(usuario.cedula)
+        respuesta.edad = usuario.edad
+        return respuesta
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
@@ -53,7 +57,9 @@ async def actualizar(
 ):
     try:
         repo = PerfilClinicoRepositoryImpl(db)
-        return await ActualizarPerfilClinicoUseCase(repo).ejecutar(usuario.cedula, dto)
+        respuesta = await ActualizarPerfilClinicoUseCase(repo).ejecutar(usuario.cedula, dto)
+        respuesta.edad = usuario.edad
+        return respuesta
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
@@ -66,7 +72,9 @@ async def actualizar_parcial(
 ):
     try:
         repo = PerfilClinicoRepositoryImpl(db)
-        return await ActualizarParcialPerfilClinicoUseCase(repo).ejecutar(usuario.cedula, dto)
+        respuesta = await ActualizarParcialPerfilClinicoUseCase(repo).ejecutar(usuario.cedula, dto)
+        respuesta.edad = usuario.edad
+        return respuesta
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
