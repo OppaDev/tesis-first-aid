@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,17 +12,17 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AlertaCard } from "@/src/components/AlertaCard";
-import { ProtocoloViewer } from "@/src/components/ProtocoloViewer";
 import { GrabadorAudio } from "@/src/components/GrabadorAudio";
 import { consultarAudio, consultarTexto } from "@/src/services/consulta";
 import { useAuthStore } from "@/src/store/authStore";
+import { useResultadoStore } from "@/src/store/resultadoStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { ApiError, ConsultaResponse } from "@/src/types/api";
 
 export default function Consulta() {
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
   const token = useAuthStore((s) => s.token);
+  const guardarResultado = useResultadoStore((s) => s.setResultado);
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -36,7 +36,15 @@ export default function Consulta() {
     setResultado(null);
     setCargando(true);
     try {
-      setResultado(await accion());
+      const resp = await accion();
+      // Si se detectó un protocolo, los pasos se muestran en una pantalla
+      // independiente. Las respuestas Q&A o "sin protocolo" se quedan en el chat.
+      if (resp.tipo === "narrativa" && resp.protocolo_encontrado) {
+        guardarResultado(resp);
+        router.push("/protocolo" as Href);
+      } else {
+        setResultado(resp);
+      }
     } catch (e) {
       setError(
         e instanceof ApiError ? e.message : "No se pudo procesar la consulta",
@@ -167,9 +175,8 @@ export default function Consulta() {
 }
 
 function Resultado({ datos }: { datos: ConsultaResponse }) {
-  const esNarrativa = datos.tipo === "narrativa";
-  const tieneProtocolo = esNarrativa && datos.protocolo_encontrado;
-
+  // Esta vista solo cubre respuestas que se quedan en el chat (Q&A y
+  // "sin protocolo"); los protocolos se muestran en la pantalla /protocolo.
   return (
     <View style={styles.resultado}>
       {datos.transcripcion ? (
@@ -185,41 +192,13 @@ function Resultado({ datos }: { datos: ConsultaResponse }) {
         </View>
       ) : null}
 
-      {tieneProtocolo ? (
-        <>
-          {datos.emergencia_detectada ? (
-            <View style={styles.emergencia}>
-              <MaterialCommunityIcons
-                name="medical-bag"
-                size={20}
-                color={colors.primario}
-              />
-              <Text style={styles.emergenciaTexto}>
-                {datos.emergencia_detectada}
-              </Text>
-            </View>
-          ) : null}
-
-          <ProtocoloViewer protocolos={datos.protocolos} />
-
-          {datos.alertas.length > 0 ? (
-            <View style={styles.alertas}>
-              <Text style={styles.alertasTitulo}>Alertas para tu perfil</Text>
-              {datos.alertas.map((a, i) => (
-                <AlertaCard key={`${a.nombre_condicion}-${i}`} alerta={a} />
-              ))}
-            </View>
-          ) : null}
-        </>
-      ) : null}
-
       {datos.tipo === "pregunta" && datos.respuesta ? (
         <View style={styles.respuesta}>
           <Text style={styles.respuestaTexto}>{datos.respuesta}</Text>
         </View>
       ) : null}
 
-      {!tieneProtocolo && datos.mensaje ? (
+      {datos.mensaje ? (
         <View style={styles.respuesta}>
           <Text style={styles.respuestaTexto}>{datos.mensaje}</Text>
         </View>
@@ -362,24 +341,6 @@ const styles = StyleSheet.create({
     color: colors.textoTenue,
     fontSize: tipografia.etiqueta,
     fontStyle: "italic",
-  },
-  emergencia: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espaciado.sm,
-  },
-  emergenciaTexto: {
-    color: colors.texto,
-    fontSize: tipografia.subtitulo,
-    fontWeight: "700",
-  },
-  alertas: {
-    gap: espaciado.md,
-  },
-  alertasTitulo: {
-    color: colors.texto,
-    fontSize: tipografia.cuerpo,
-    fontWeight: "700",
   },
   respuesta: {
     backgroundColor: colors.tarjeta,

@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -16,6 +17,7 @@ import { SelectorFecha } from "@/src/components/SelectorFecha";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, tipografia } from "@/src/theme/theme";
 import { ApiError } from "@/src/types/api";
+import { passwordValida, requisitosPassword } from "@/src/utils/password";
 
 function aISO(d: Date): string {
   const mes = String(d.getMonth() + 1).padStart(2, "0");
@@ -39,7 +41,9 @@ export default function Registro() {
 
   const insets = useSafeAreaInsets();
 
-  // Comparación de contraseñas en tiempo real
+  // Validación de contraseña en tiempo real
+  const requisitos = requisitosPassword(password);
+  const passwordOk = passwordValida(password);
   const passwordsCoinciden = password.length > 0 && password === confirmar;
   const mostrarNoCoinciden = confirmar.length > 0 && password !== confirmar;
 
@@ -50,6 +54,10 @@ export default function Registro() {
     }
     if (fechaNacimiento >= new Date()) {
       setError("La fecha de nacimiento debe ser anterior a hoy.");
+      return;
+    }
+    if (!passwordOk) {
+      setError("La contraseña no cumple los requisitos.");
       return;
     }
     if (password !== confirmar) {
@@ -129,13 +137,36 @@ export default function Registro() {
             keyboardType="email-address"
             placeholder="usuario@correo.com"
           />
-          <Campo
-            etiqueta="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="Mínimo 6 caracteres"
-          />
+          <View>
+            <Campo
+              etiqueta="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="Mínimo 8 caracteres"
+            />
+            {password.length > 0 ? (
+              <View style={styles.requisitos}>
+                {requisitos.map((r) => (
+                  <View key={r.etiqueta} style={styles.requisito}>
+                    <MaterialCommunityIcons
+                      name={r.cumple ? "check-circle" : "close-circle"}
+                      size={14}
+                      color={r.cumple ? colors.exito : colors.error}
+                    />
+                    <Text
+                      style={[
+                        styles.requisitoTexto,
+                        { color: r.cumple ? colors.exito : colors.textoTenue },
+                      ]}
+                    >
+                      {r.etiqueta}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </View>
           <View>
             <Campo
               etiqueta="Confirmar contraseña"
@@ -157,7 +188,7 @@ export default function Registro() {
             titulo="Registrarme"
             onPress={enviar}
             cargando={cargando}
-            deshabilitado={!passwordsCoinciden}
+            deshabilitado={!passwordOk || !passwordsCoinciden}
           />
 
           <View style={styles.piePagina}>
@@ -202,6 +233,18 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 440,
     alignSelf: "center",
+  },
+  requisitos: {
+    marginTop: espaciado.sm,
+    gap: espaciado.xs,
+  },
+  requisito: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.xs,
+  },
+  requisitoTexto: {
+    fontSize: tipografia.pequeno,
   },
   pista: {
     color: colors.error,

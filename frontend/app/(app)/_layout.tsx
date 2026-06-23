@@ -41,6 +41,8 @@ export default function AppLayout() {
           ),
         }}
       />
+      {/* Ruta de resultado: accesible por navegación, oculta de la barra. */}
+      <Tabs.Screen name="protocolo" options={{ href: null }} />
     </Tabs>
   );
 }

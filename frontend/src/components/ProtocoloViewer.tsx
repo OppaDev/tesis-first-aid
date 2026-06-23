@@ -1,6 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useMemo, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import * as Speech from "expo-speech";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { IMAGENES_PROTOCOLOS } from "@/src/data/imagenesProtocolos";
@@ -19,11 +21,60 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   const inicial = protocolos[0]?.id_protocolo ?? "";
   const [actualId, setActualId] = useState(inicial);
   const [historial, setHistorial] = useState<string[]>([]);
+  const [vozActiva, setVozActiva] = useState(true);
+
+  // Al recibir un protocolo nuevo (otra consulta), reiniciar la navegación:
+  // los ids del protocolo anterior ya no existen en el nuevo mapa.
+  useEffect(() => {
+    setActualId(inicial);
+    setHistorial([]);
+  }, [protocolos, inicial]);
 
   const paso = porId.get(actualId);
+
+  // Texto a leer en voz alta: instrucción + observación (si la hay).
+  const textoVoz = paso
+    ? [paso.instruccion, paso.observacion].filter(Boolean).join(". ")
+    : "";
+
+  // Auto-lectura de cada paso al mostrarse (si la voz está activa).
+  useEffect(() => {
+    Speech.stop();
+    if (vozActiva && textoVoz) {
+      Speech.speak(textoVoz, { language: "es" });
+    }
+  }, [actualId, vozActiva, textoVoz]);
+
+  // Detener la lectura al perder el foco la pantalla (volver al chat, cambiar
+  // de pestaña). La pantalla vive en un Tab y no se desmonta, por eso no basta
+  // con el cleanup de montaje: hay que reaccionar al blur.
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        Speech.stop();
+      };
+    }, []),
+  );
+
   if (!paso) {
     return null;
   }
+
+  const alternarVoz = () => {
+    if (vozActiva) {
+      Speech.stop();
+      setVozActiva(false);
+    } else {
+      setVozActiva(true); // el efecto se encarga de leer
+    }
+  };
+
+  const repetir = () => {
+    Speech.stop();
+    if (textoVoz) {
+      Speech.speak(textoVoz, { language: "es" });
+    }
+  };
 
   const existe = (id: string | null | undefined): id is string =>
     !!id && id !== "NULL" && porId.has(id);
@@ -76,6 +127,25 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
               <Text style={styles.numeroTexto}>{paso.numero}</Text>
             </View>
           )}
+
+          <View style={styles.controlesVoz}>
+            {vozActiva ? (
+              <Pressable onPress={repetir} hitSlop={10} style={styles.botonVoz}>
+                <MaterialCommunityIcons
+                  name="replay"
+                  size={22}
+                  color={colors.primario}
+                />
+              </Pressable>
+            ) : null}
+            <Pressable onPress={alternarVoz} hitSlop={10} style={styles.botonVoz}>
+              <MaterialCommunityIcons
+                name={vozActiva ? "volume-high" : "volume-off"}
+                size={22}
+                color={vozActiva ? colors.primario : colors.textoTenue}
+              />
+            </Pressable>
+          </View>
         </View>
 
         <Text style={styles.instruccion}>{paso.instruccion}</Text>
@@ -193,6 +263,16 @@ const styles = StyleSheet.create({
   encabezado: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    alignSelf: "stretch",
+  },
+  controlesVoz: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.md,
+  },
+  botonVoz: {
+    padding: espaciado.xs,
   },
   numeroCirculo: {
     width: 40,

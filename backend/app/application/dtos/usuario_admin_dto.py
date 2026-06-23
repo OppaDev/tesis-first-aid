@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import date
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from app.application.dtos.password_validator import validar_password
 from app.domain.entities.usuario import Usuario
 
 
@@ -17,8 +18,13 @@ class CrearUsuarioAdminDTO(BaseModel):
     apellidos: str = Field(..., min_length=2)
     fecha_nacimiento: date
     email: EmailStr
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=8)
     id_rol: int = 2  # por defecto, usuario
+
+    @field_validator("password")
+    @classmethod
+    def _validar_password(cls, v: str) -> str:
+        return validar_password(v)
 
 
 class ActualizarUsuarioAdminDTO(BaseModel):
