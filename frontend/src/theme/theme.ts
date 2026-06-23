@@ -1,33 +1,40 @@
 /**
- * Sistema de diseño — marca SanFra (COAC San Francisco).
- * Tema oscuro, profesional, con acento lavanda. Sin emojis: se usan iconos.
+ * Sistema de diseño — app de primeros auxilios SanFra (COAC San Francisco).
+ *
+ * Tema CLARO de emergencia: base blanca, limpia y legible, con el ROJO como
+ * color de acción/urgencia (botones, alertas críticas). Se conserva el morado
+ * institucional de SanFra como acento SECUNDARIO (marca). Sin emojis: iconos.
  */
 
 export const colors = {
-  // Base oscura
-  fondo: "#0B0B0F",
-  superficie: "#16161B",
-  tarjeta: "#20202A",
-  borde: "#2C2C36",
+  // Base clara
+  fondo: "#F3F5F9", // fondo de la app (blanco suave)
+  superficie: "#FFFFFF", // inputs, chips, cabeceras
+  tarjeta: "#FFFFFF", // tarjetas (elevadas sobre el fondo)
+  borde: "#DDE2EA",
 
   // Texto
-  texto: "#F5F5F7",
-  textoTenue: "#9CA3AF",
+  texto: "#16181D",
+  textoTenue: "#5B6472",
 
-  // Acento de marca (lavanda)
-  primario: "#C3AEE8", // fondo de botones; usar texto oscuro encima
-  primarioFuerte: "#8B6FD6", // estados activos / acentos
-  sobrePrimario: "#1A1330",
+  // Acento de acción / emergencia (rojo)
+  primario: "#DC2626", // fondo de botones; usar texto blanco encima
+  primarioFuerte: "#B91C1C", // estados activos / acentos fuertes
+  sobrePrimario: "#FFFFFF",
 
-  // Semánticos (severidad de alertas) — legibles sobre oscuro
-  critica: "#F87171",
-  alta: "#FB923C",
-  media: "#FBBF24",
-  baja: "#818CF8",
+  // Acento institucional SanFra (morado) — secundario / marca
+  secundario: "#6D28D9",
+  sobreSecundario: "#FFFFFF",
+
+  // Semánticos (severidad de alertas) — legibles sobre claro
+  critica: "#DC2626",
+  alta: "#EA580C",
+  media: "#CA8A04",
+  baja: "#6D28D9",
 
   // Utilidad
-  exito: "#34D399",
-  error: "#F87171",
+  exito: "#16A34A",
+  error: "#DC2626",
   transparente: "transparent",
 } as const;
 

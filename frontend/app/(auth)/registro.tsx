@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   subtitulo: {
-    color: colors.primario,
+    color: colors.secundario,
     fontSize: tipografia.etiqueta,
     fontWeight: "600",
   },

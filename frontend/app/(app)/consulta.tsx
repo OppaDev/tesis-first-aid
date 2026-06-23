@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   cabeceraSub: {
-    color: colors.primario,
+    color: colors.secundario,
     fontSize: tipografia.pequeno,
     fontWeight: "600",
   },

@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   subtitulo: {
-    color: colors.primario,
+    color: colors.secundario,
     fontSize: tipografia.cuerpo,
     fontWeight: "600",
   },

@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   numeroTexto: {
-    color: colors.texto,
+    color: colors.sobrePrimario,
     fontSize: tipografia.subtitulo,
     fontWeight: "800",
   },
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   observacionCaja: {
     flexDirection: "row",
     gap: espaciado.sm,
-    backgroundColor: colors.superficie,
+    backgroundColor: colors.fondo,
     borderRadius: radio.md,
     padding: espaciado.md,
     alignItems: "flex-start",
