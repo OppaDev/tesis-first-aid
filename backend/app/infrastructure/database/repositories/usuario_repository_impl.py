@@ -75,6 +75,12 @@ class UsuarioRepositoryImpl(UsuarioRepository):
             await self._session.delete(model)
             await self._session.commit()
 
+    async def incrementar_token_version(self, cedula: str) -> None:
+        model = await self._session.get(UsuarioModel, cedula)
+        if model is not None:
+            model.token_version += 1
+            await self._session.commit()
+
     async def contar_por_rol(self, id_rol: int) -> int:
         result = await self._session.execute(
             select(func.count()).select_from(UsuarioModel).where(UsuarioModel.id_rol == id_rol)
@@ -106,6 +112,7 @@ class UsuarioRepositoryImpl(UsuarioRepository):
             cedula=model.cedula,
             id_rol=model.id_rol,
             rol=UsuarioRepositoryImpl._rol_to_entity(model.rol),
+            token_version=model.token_version,
             nombres=model.nombres,
             apellidos=model.apellidos,
             fecha_nacimiento=model.fecha_nacimiento,

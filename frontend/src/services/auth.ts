@@ -1,4 +1,4 @@
-import { postJson } from "@/src/services/api";
+import { API_URL, postJson } from "@/src/services/api";
 import {
   LoginRequest,
   RegistroRequest,
@@ -12,4 +12,20 @@ export function login(datos: LoginRequest): Promise<TokenResponse> {
 
 export function registro(datos: RegistroRequest): Promise<UsuarioResponse> {
   return postJson<UsuarioResponse>("/auth/registro", datos);
+}
+
+/**
+ * Cierra la sesión en el servidor (revoca los JWT vigentes del usuario).
+ * Es "best-effort": usa el token explícito y silencia cualquier error de red
+ * para que el cierre local de sesión nunca se bloquee ni falle.
+ */
+export async function logout(token: string): Promise<void> {
+  try {
+    await fetch(`${API_URL}/auth/logout`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    // sin conexión: la sesión local se cierra igual
+  }
 }

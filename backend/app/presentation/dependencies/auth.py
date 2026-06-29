@@ -13,6 +13,14 @@ _bearer = HTTPBearer()
 _bearer_opcional = HTTPBearer(auto_error=False)
 
 
+def _version_token_valida(payload: dict, usuario: Usuario) -> bool:
+    """El token es válido si su token_version coincide con el del usuario.
+    Los tokens legados (sin el claim) se aceptan: no rompen sesiones previas
+    y expiran solos. Los nuevos quedan revocados al cerrar sesión."""
+    version = payload.get("token_version")
+    return version is None or version == usuario.token_version
+
+
 async def get_usuario_actual(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
     db: AsyncSession = Depends(get_db),
@@ -25,6 +33,8 @@ async def get_usuario_actual(
     usuario = await repo.obtener_por_cedula(payload.get("sub", ""))
     if not usuario:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
+    if not _version_token_valida(payload, usuario):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sesión finalizada")
 
     return usuario
 
@@ -42,7 +52,10 @@ async def get_usuario_opcional(
     if not payload:
         return None
     repo = UsuarioRepositoryImpl(db)
-    return await repo.obtener_por_cedula(payload.get("sub", ""))
+    usuario = await repo.obtener_por_cedula(payload.get("sub", ""))
+    if usuario and not _version_token_valida(payload, usuario):
+        return None  # token revocado: se trata como anónimo
+    return usuario
 
 
 def requiere_permiso(nombre_permiso: str) -> Callable:

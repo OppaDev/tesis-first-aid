@@ -7,12 +7,15 @@ from app.application.dtos.auth_dto import (
     TokenResponseDTO,
     UsuarioResponseDTO,
 )
+from app.application.use_cases.cerrar_sesion_usuario import CerrarSesionUsuarioUseCase
 from app.application.use_cases.login_usuario import LoginUsuarioUseCase
 from app.application.use_cases.registrar_usuario import RegistrarUsuarioUseCase
+from app.domain.entities.usuario import Usuario
 from app.domain.exceptions import ValidationError
 from app.infrastructure.config import settings
 from app.infrastructure.database.database import get_db
 from app.infrastructure.database.repositories.usuario_repository_impl import UsuarioRepositoryImpl
+from app.presentation.dependencies.auth import get_usuario_actual
 from app.presentation.middleware.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
@@ -36,3 +39,13 @@ async def login(request: Request, dto: LoginRequestDTO, db: AsyncSession = Depen
         return await LoginUsuarioUseCase(repo).ejecutar(dto)
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(
+    usuario: Usuario = Depends(get_usuario_actual),
+    db: AsyncSession = Depends(get_db),
+):
+    """Cierra la sesión del servidor: invalida los JWT vigentes del usuario."""
+    repo = UsuarioRepositoryImpl(db)
+    await CerrarSesionUsuarioUseCase(repo).ejecutar(usuario.cedula)

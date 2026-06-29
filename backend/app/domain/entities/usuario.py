@@ -16,6 +16,7 @@ class Usuario:
     password: str  # hash de la contraseña, nunca texto plano
     id_rol: int | None = None
     rol: Rol | None = None
+    token_version: int = 0  # se incrementa al cerrar sesión (revocación de JWT)
 
     def __post_init__(self) -> None:
         if not self.cedula or not self.cedula.strip():

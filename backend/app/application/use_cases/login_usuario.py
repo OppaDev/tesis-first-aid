@@ -27,5 +27,6 @@ class LoginUsuarioUseCase:
             "sub": usuario.cedula,
             "email": usuario.email,
             "rol": usuario.id_rol,
+            "token_version": usuario.token_version,
         })
         return TokenResponseDTO(access_token=token)

@@ -91,7 +91,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"cedula\": \"1710034065\",\n  \"nombres\": \"Maria\",\n  \"apellidos\": \"Perez\",\n  \"fecha_nacimiento\": \"1990-03-12\",\n  \"email\": \"maria@correo.com\",\n  \"password\": \"clave123\",\n  \"id_rol\": 2\n}"
+        "text": "{\n  \"cedula\": \"1710034065\",\n  \"nombres\": \"Maria\",\n  \"apellidos\": \"Perez\",\n  \"fecha_nacimiento\": \"1990-03-12\",\n  \"email\": \"maria@correo.com\",\n  \"password\": \"Sanfra#2026\",\n  \"id_rol\": 2\n}"
       },
       "metaSortKey": -5.5
     },
@@ -184,6 +184,23 @@
         "text": "{\n  \"condiciones\": [\n    { \"id_condicion\": 1, \"detalle\": \"Revisado por médico ocupacional: control glucémico mensual\" }\n  ]\n}"
       },
       "metaSortKey": -2
+    },
+    {
+      "_id": "req_usuarios_perfil_put",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Reemplazar perfil clínico de un usuario (PUT)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/admin/usuarios/0402084040/perfil",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 176,\n  \"peso_kg\": 72,\n  \"condiciones\": [\n    { \"id_condicion\": 1, \"detalle\": \"Diabetes tipo 2, control mensual\" }\n  ]\n}"
+      },
+      "metaSortKey": -1.5
     },
     {
       "_id": "req_reglas_listar",
@@ -381,7 +398,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"admin123\"\n}"
+        "text": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Sanfra#2026\"\n}"
       },
       "metaSortKey": -2
     },
@@ -397,9 +414,22 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"cedula\": \"0402084040\",\n  \"nombres\": \"Jefferson Leonardo\",\n  \"apellidos\": \"Obando Carlosma\",\n  \"fecha_nacimiento\": \"1999-05-17\",\n  \"email\": \"user@example.com\",\n  \"password\": \"admin123\"\n}"
+        "text": "{\n  \"cedula\": \"0402084040\",\n  \"nombres\": \"Jefferson Leonardo\",\n  \"apellidos\": \"Obando Carlosma\",\n  \"fecha_nacimiento\": \"1999-05-17\",\n  \"email\": \"user@example.com\",\n  \"password\": \"Sanfra#2026\"\n}"
       },
       "metaSortKey": -1
+    },
+    {
+      "_id": "req_logout",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Logout (revoca el token actual)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/logout",
+      "headers": [
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {},
+      "metaSortKey": -0.5
     },
     {
       "_id": "req_condiciones_catalogo",
