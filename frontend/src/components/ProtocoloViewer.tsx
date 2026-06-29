@@ -5,6 +5,7 @@ import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { VOZ_IDIOMA, VOZ_VELOCIDAD } from "@/src/config/voz";
 import { IMAGENES_PROTOCOLOS } from "@/src/data/imagenesProtocolos";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { Protocolo } from "@/src/types/api";
@@ -41,7 +42,7 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   useEffect(() => {
     Speech.stop();
     if (vozActiva && textoVoz) {
-      Speech.speak(textoVoz, { language: "es" });
+      Speech.speak(textoVoz, { language: VOZ_IDIOMA, rate: VOZ_VELOCIDAD });
     }
   }, [actualId, vozActiva, textoVoz]);
 
@@ -72,7 +73,7 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   const repetir = () => {
     Speech.stop();
     if (textoVoz) {
-      Speech.speak(textoVoz, { language: "es" });
+      Speech.speak(textoVoz, { language: VOZ_IDIOMA, rate: VOZ_VELOCIDAD });
     }
   };
 
