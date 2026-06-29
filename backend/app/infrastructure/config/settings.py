@@ -19,9 +19,14 @@ class Settings(BaseSettings):
     asr_compute_type: str = "int8"
     asr_idioma: str = "es"
 
-    # Rate limiting (slowapi). Límite global por IP y uno más estricto para el login.
+    # Rate limiting (slowapi). Límite global por IP y otros más estrictos para
+    # endpoints sensibles (login, registro de cuentas).
     rate_limit_default: str = "120/minute"
     rate_limit_login: str = "10/minute"
+    rate_limit_registro: str = "5/minute"
+
+    # Tamaño máximo del audio de consulta (MB). Evita agotar memoria con subidas grandes.
+    max_audio_mb: int = 10
 
 
 settings = Settings()

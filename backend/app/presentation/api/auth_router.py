@@ -19,7 +19,8 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 
 @router.post("/registro", response_model=UsuarioResponseDTO, status_code=status.HTTP_201_CREATED)
-async def registro(dto: RegistroRequestDTO, db: AsyncSession = Depends(get_db)):
+@limiter.limit(settings.rate_limit_registro)
+async def registro(request: Request, dto: RegistroRequestDTO, db: AsyncSession = Depends(get_db)):
     try:
         repo = UsuarioRepositoryImpl(db)
         return await RegistrarUsuarioUseCase(repo).ejecutar(dto)

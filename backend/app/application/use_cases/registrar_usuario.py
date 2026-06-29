@@ -13,10 +13,10 @@ class RegistrarUsuarioUseCase:
         self._repo = repo
 
     async def ejecutar(self, dto: RegistroRequestDTO) -> UsuarioResponseDTO:
-        if await self._repo.obtener_por_cedula(dto.cedula):
-            raise ValidationError("Ya existe un usuario con esa cédula")
-        if await self._repo.obtener_por_email(dto.email):
-            raise ValidationError("Ya existe un usuario con ese email")
+        # Mensaje unificado a propósito: no revelar si fue la cédula o el email
+        # lo que ya estaba registrado (evita enumeración del dato concreto).
+        if await self._repo.obtener_por_cedula(dto.cedula) or await self._repo.obtener_por_email(dto.email):
+            raise ValidationError("Ya existe una cuenta con esos datos")
 
         usuario = Usuario(
             cedula=dto.cedula,

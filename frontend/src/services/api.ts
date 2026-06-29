@@ -14,6 +14,14 @@ export function setAuthToken(token: string | null): void {
   tokenActual = token;
 }
 
+// Callback que se invoca cuando el backend rechaza un token vigente (401):
+// lo registra la capa de navegación para cerrar sesión y volver al login.
+let alExpirarSesion: (() => void) | null = null;
+
+export function setManejadorSesionExpirada(cb: (() => void) | null): void {
+  alExpirarSesion = cb;
+}
+
 function encabezados(extra?: Record<string, string>): Record<string, string> {
   const headers: Record<string, string> = { ...extra };
   if (tokenActual) {
@@ -23,6 +31,12 @@ function encabezados(extra?: Record<string, string>): Record<string, string> {
 }
 
 async function manejarError(res: Response): Promise<never> {
+  // Si el backend rechaza un token que teníamos por vigente (expirado/invalidado),
+  // disparamos el cierre de sesión. El guard `tokenActual` evita que un login
+  // fallido (que también responde 401, sin token aún) cierre nada.
+  if (res.status === 401 && tokenActual) {
+    alExpirarSesion?.();
+  }
   let detalle = `Error ${res.status}`;
   try {
     const data = await res.json();

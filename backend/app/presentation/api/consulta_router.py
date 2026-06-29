@@ -18,10 +18,28 @@ from app.infrastructure.database.repositories.emergencia_repository_impl import 
 from app.infrastructure.database.repositories.perfil_clinico_repository_impl import PerfilClinicoRepositoryImpl
 from app.infrastructure.external_services.clasificador_emergencias import ClasificadorEmergenciasAdapter
 from app.infrastructure.external_services.sistema_qa import SistemaQAAdapter
+from app.infrastructure.config import settings
 from app.infrastructure.external_services.transcriptor_whisper import TranscriptorWhisperAdapter
 from app.presentation.dependencies.auth import get_usuario_opcional
 
 router = APIRouter(prefix="/consulta", tags=["Consulta"])
+
+_MAX_AUDIO_BYTES = settings.max_audio_mb * 1024 * 1024
+_CHUNK = 64 * 1024
+
+
+async def _leer_audio_con_limite(archivo: UploadFile) -> bytes:
+    """Lee el archivo en bloques y aborta si supera el límite, en lugar de
+    cargarlo entero en memoria (evita DoS por subidas gigantes)."""
+    datos = bytearray()
+    while chunk := await archivo.read(_CHUNK):
+        datos.extend(chunk)
+        if len(datos) > _MAX_AUDIO_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"El audio supera el límite de {settings.max_audio_mb} MB.",
+            )
+    return bytes(datos)
 
 # Singletons: los modelos se cargan una sola vez en memoria
 _clasificador = ClasificadorEmergenciasAdapter()
@@ -84,7 +102,16 @@ async def procesar_consulta_audio(
     transcriptor: TranscriptorAudioPort = Depends(get_transcriptor),
     usuario: Usuario | None = Depends(get_usuario_opcional),
 ) -> ConsultaResponseDTO:
-    audio = await archivo.read()
+    # Validación de tipo: aceptar audio/* (y el genérico que envían algunos
+    # clientes); rechazar cualquier otro contenido antes de leerlo.
+    tipo = archivo.content_type or ""
+    if tipo and not (tipo.startswith("audio/") or tipo == "application/octet-stream"):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Tipo de archivo no admitido. Sube un audio.",
+        )
+
+    audio = await _leer_audio_con_limite(archivo)
     if not audio:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El archivo de audio está vacío")
 
