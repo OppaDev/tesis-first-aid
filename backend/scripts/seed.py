@@ -27,13 +27,22 @@ def _limpiar(valor) -> str | None:
 
 
 def _partir(raw: str | None) -> tuple[str | None, str | None]:
-    """Divide 'A\\nB' en ('A', 'B'). Si es un solo valor retorna (valor, None)."""
+    """Divide 'A\\nB' en (sí, no) respetando la POSICIÓN de cada línea.
+
+    Línea 1 = rama 'sí', línea 2 = rama 'no'. Un 'NULL'/vacío se mapea a None
+    sin desplazar la otra rama: 'NULL\\nTQ008' -> (None, 'TQ008'), no ('TQ008', None).
+    """
     if not raw:
         return None, None
-    partes = [p.strip() for p in raw.split("\n") if p.strip() and p.strip().upper() != "NULL"]
-    primero = partes[0] if len(partes) > 0 else None
-    segundo = partes[1] if len(partes) > 1 else None
-    return primero, segundo
+    lineas = str(raw).split("\n")
+
+    def _linea(i: int) -> str | None:
+        if i >= len(lineas):
+            return None
+        s = lineas[i].strip()
+        return None if s == "" or s.upper() == "NULL" else s
+
+    return _linea(0), _linea(1)
 
 
 def cargar_excel(path: Path):

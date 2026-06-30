@@ -22,7 +22,7 @@ const NOMBRES_ANEXO: { prefijo: string; nombre: string }[] = [
 
 function nombreAnexo(id: string): string {
   const m = NOMBRES_ANEXO.find((n) => id.startsWith(n.prefijo));
-  return m ? `Ver anexo: ${m.nombre}` : "Ver anexo";
+  return m ? m.nombre : "Guía complementaria";
 }
 
 export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
@@ -206,21 +206,37 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
           />
         ) : null}
 
-        {anexos.map((idAnexo) => (
-          <Pressable
-            key={idAnexo}
-            onPress={() => irAnexo(idAnexo)}
-            style={styles.anexo}
-          >
-            <MaterialCommunityIcons
-              name="file-document-outline"
-              size={16}
-              color={colors.primario}
-            />
-            <Text style={styles.anexoTexto}>{nombreAnexo(idAnexo)}</Text>
-          </Pressable>
-        ))}
       </View>
+
+      {/* Anexos: sub-protocolos opcionales. Botón destacado para que no se
+          confunda con la información del paso. */}
+      {anexos.map((idAnexo) => (
+        <Pressable
+          key={idAnexo}
+          onPress={() => irAnexo(idAnexo)}
+          style={({ pressed }) => [
+            styles.anexoBoton,
+            pressed ? styles.presionado : null,
+          ]}
+        >
+          <View style={styles.anexoIcono}>
+            <MaterialCommunityIcons
+              name="medical-bag"
+              size={22}
+              color={colors.sobrePrimario}
+            />
+          </View>
+          <View style={styles.anexoInfo}>
+            <Text style={styles.anexoEtiqueta}>VER ANEXO</Text>
+            <Text style={styles.anexoNombre}>{nombreAnexo(idAnexo)}</Text>
+          </View>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={24}
+            color={colors.primario}
+          />
+        </Pressable>
+      ))}
 
       {/* Navegación según el tipo de nodo */}
       {esDecision ? (
@@ -382,15 +398,39 @@ const styles = StyleSheet.create({
     borderRadius: radio.md,
     backgroundColor: colors.superficie,
   },
-  anexo: {
+  anexoBoton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: espaciado.xs,
+    gap: espaciado.md,
+    backgroundColor: colors.superficie,
+    borderWidth: 1.5,
+    borderColor: colors.primario,
+    borderRadius: radio.md,
+    paddingVertical: espaciado.md,
+    paddingHorizontal: espaciado.lg,
   },
-  anexoTexto: {
+  anexoIcono: {
+    width: 40,
+    height: 40,
+    borderRadius: radio.full,
+    backgroundColor: colors.primario,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  anexoInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  anexoEtiqueta: {
     color: colors.primario,
-    fontSize: tipografia.etiqueta,
-    fontWeight: "700",
+    fontSize: tipografia.pequeno,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  anexoNombre: {
+    color: colors.texto,
+    fontSize: tipografia.cuerpo,
+    fontWeight: "800",
   },
   volverProtocolo: {
     flexDirection: "row",
