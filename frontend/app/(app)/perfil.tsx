@@ -1,9 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Href, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,7 +23,7 @@ import {
   eliminarPerfil,
   obtenerPerfil,
 } from "@/src/services/perfil";
-import { useAuthStore } from "@/src/store/authStore";
+import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import {
   ApiError,
@@ -37,6 +38,8 @@ export default function Perfil() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
+  const rol = useAuthStore((s) => s.rol);
+  const esAdmin = rol === ID_ROL_ADMIN;
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -212,6 +215,11 @@ export default function Perfil() {
     <View style={styles.flex}>
       <View style={[styles.cabecera, { paddingTop: insets.top + espaciado.md }]}>
         <Text style={styles.titulo}>Mi perfil clínico</Text>
+        {esAdmin ? (
+          <Pressable onPress={() => router.push("/reglas" as Href)} hitSlop={12}>
+            <MaterialCommunityIcons name="shield-account" size={24} color={colors.primario} />
+          </Pressable>
+        ) : null}
       </View>
 
       <ScrollView
@@ -420,6 +428,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.fondo,
   },
   cabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: espaciado.xl,
     paddingBottom: espaciado.md,
     borderBottomWidth: 1,
@@ -432,6 +443,9 @@ const styles = StyleSheet.create({
   },
   contenido: {
     padding: espaciado.xl,
+    width: "100%",
+    maxWidth: 720,
+    alignSelf: "center",
   },
   bloque: {
     gap: espaciado.lg,

@@ -8,11 +8,13 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
 import { Campo } from "@/src/components/Campo";
+import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
   actualizarCondicion,
@@ -37,6 +39,9 @@ interface Categoria {
   nombre: string;
 }
 
+const ANCHO_TABLA = 768; // >= tabla; < tarjetas
+const LIMITE = 20;
+
 export default function Condiciones() {
   const [condiciones, setCondiciones] = useState<FilaCondicion[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -50,6 +55,18 @@ export default function Condiciones() {
   const [idCategoria, setIdCategoria] = useState<number | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
+
+  const { width } = useWindowDimensions();
+  const esAncho = width >= ANCHO_TABLA;
+  const [offset, setOffset] = useState(0);
+  // Paginación del lado del cliente (el catálogo se carga completo).
+  const pagina = condiciones.slice(offset, offset + LIMITE);
+
+  useEffect(() => {
+    if (offset > 0 && offset >= condiciones.length) {
+      setOffset(Math.max(0, offset - LIMITE));
+    }
+  }, [condiciones.length, offset]);
 
   const cargar = async () => {
     setCargando(true);
@@ -196,8 +213,10 @@ export default function Condiciones() {
   return (
     <View style={styles.flex}>
       <View style={styles.cabecera}>
-        <View>
-          <Text style={styles.titulo}>Catálogo de condiciones</Text>
+        <View style={styles.tituloWrap}>
+          <Text style={styles.titulo} numberOfLines={2}>
+            Catálogo de condiciones
+          </Text>
           <Text style={styles.subtitulo}>{condiciones.length} condiciones</Text>
         </View>
         <Pressable onPress={abrirCrear} style={styles.nuevo}>
@@ -209,12 +228,28 @@ export default function Condiciones() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <View style={styles.tablaWrap}>
-        <Tabla
-          columnas={columnas}
-          datos={condiciones}
-          keyExtractor={(c) => String(c.id_condicion)}
-          vacioTexto="No hay condiciones en el catálogo"
-        />
+        {esAncho ? (
+          <Tabla
+            columnas={columnas}
+            datos={pagina}
+            keyExtractor={(c) => String(c.id_condicion)}
+            vacioTexto="No hay condiciones en el catálogo"
+          />
+        ) : condiciones.length === 0 ? (
+          <Text style={styles.vacio}>No hay condiciones en el catálogo</Text>
+        ) : (
+          <ScrollView contentContainerStyle={styles.listaCards}>
+            {pagina.map((c) => (
+              <TarjetaCondicion
+                key={c.id_condicion}
+                condicion={c}
+                onEditar={() => abrirEditar(c)}
+                onEliminar={() => borrar(c)}
+              />
+            ))}
+          </ScrollView>
+        )}
+        <Paginador offset={offset} limit={LIMITE} total={condiciones.length} onCambiar={setOffset} />
       </View>
 
       <Modal visible={modal} transparent animationType="fade" onRequestClose={() => setModal(false)}>
@@ -269,6 +304,37 @@ export default function Condiciones() {
   );
 }
 
+function TarjetaCondicion({
+  condicion,
+  onEditar,
+  onEliminar,
+}: {
+  condicion: FilaCondicion;
+  onEditar: () => void;
+  onEliminar: () => void;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <Text style={styles.cardNombre}>{condicion.nombre_condicion}</Text>
+        <View style={styles.cardAcciones}>
+          <Pressable onPress={onEditar} hitSlop={8}>
+            <MaterialCommunityIcons name="pencil" size={20} color={colors.primario} />
+          </Pressable>
+          <Pressable onPress={onEliminar} hitSlop={8}>
+            <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
+          </Pressable>
+        </View>
+      </View>
+      <Text style={styles.cardDesc}>{condicion.descripcion_condicion}</Text>
+      <View style={styles.cardCatRow}>
+        <MaterialCommunityIcons name="shape-outline" size={14} color={colors.textoTenue} />
+        <Text style={styles.cardCat}>{condicion.nombreCategoria}</Text>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -276,9 +342,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: espaciado.md,
     padding: espaciado.xl,
   },
-  titulo: { color: colors.texto, fontSize: tipografia.titulo, fontWeight: "800" },
+  tituloWrap: { flex: 1 },
+  titulo: { color: colors.texto, fontSize: tipografia.subtitulo, fontWeight: "800" },
   subtitulo: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
   nuevo: {
     flexDirection: "row",
@@ -292,6 +360,38 @@ const styles = StyleSheet.create({
   nuevoTexto: { color: colors.sobrePrimario, fontWeight: "800" },
   error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
   tablaWrap: { flex: 1, paddingHorizontal: espaciado.xl, paddingBottom: espaciado.xl },
+  vacio: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    textAlign: "center",
+    padding: espaciado.xl,
+  },
+  // Tarjetas (móvil)
+  listaCards: { gap: espaciado.md, paddingBottom: espaciado.md },
+  card: {
+    backgroundColor: colors.tarjeta,
+    borderRadius: radio.md,
+    borderWidth: 1,
+    borderColor: colors.borde,
+    padding: espaciado.lg,
+    gap: espaciado.sm,
+  },
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: espaciado.sm,
+  },
+  cardNombre: {
+    flex: 1,
+    color: colors.texto,
+    fontSize: tipografia.cuerpo,
+    fontWeight: "700",
+  },
+  cardAcciones: { flexDirection: "row", gap: espaciado.lg },
+  cardDesc: { color: colors.textoTenue, fontSize: tipografia.etiqueta, lineHeight: 18 },
+  cardCatRow: { flexDirection: "row", alignItems: "center", gap: espaciado.xs },
+  cardCat: { color: colors.textoTenue, fontSize: tipografia.pequeno, fontWeight: "600" },
   celdaTexto: { color: colors.textoTenue, fontSize: tipografia.etiqueta, lineHeight: 18 },
   celdaFuerte: { color: colors.texto, fontSize: tipografia.etiqueta, fontWeight: "700" },
   accionesCelda: { flexDirection: "row", gap: espaciado.lg },

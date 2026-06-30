@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -32,6 +33,7 @@ import {
 import { confirmar } from "@/src/utils/confirmar";
 
 const SEVERIDADES = ["critica", "alta", "media", "baja"];
+const ANCHO_TABLA = 768; // >= tabla; < tarjetas
 
 export default function Reglas() {
   const [reglas, setReglas] = useState<ReglaAlertaResponse[]>([]);
@@ -53,6 +55,9 @@ export default function Reglas() {
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
+
+  const { width } = useWindowDimensions();
+  const esAncho = width >= ANCHO_TABLA;
 
   const cargar = async () => {
     setCargando(true);
@@ -227,12 +232,29 @@ export default function Reglas() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <View style={styles.tablaWrap}>
-        <Tabla
-          columnas={columnas}
-          datos={reglas}
-          keyExtractor={(r) => String(r.id_regla)}
-          vacioTexto="No hay reglas configuradas"
-        />
+        {esAncho ? (
+          <Tabla
+            columnas={columnas}
+            datos={reglas}
+            keyExtractor={(r) => String(r.id_regla)}
+            vacioTexto="No hay reglas configuradas"
+          />
+        ) : reglas.length === 0 ? (
+          <Text style={styles.vacio}>No hay reglas configuradas</Text>
+        ) : (
+          <ScrollView contentContainerStyle={styles.listaCards}>
+            {reglas.map((r) => (
+              <TarjetaRegla
+                key={r.id_regla}
+                regla={r}
+                condicion={nombreCondicion(r.id_condicion)}
+                emergencia={nombreEmergencia(r.id_emergencia)}
+                onEditar={() => abrirEditar(r)}
+                onEliminar={() => borrar(r)}
+              />
+            ))}
+          </ScrollView>
+        )}
         <Paginador offset={offset} limit={LIMITE} total={total} onCambiar={setOffset} />
       </View>
 
@@ -295,6 +317,43 @@ export default function Reglas() {
   );
 }
 
+function TarjetaRegla({
+  regla,
+  condicion,
+  emergencia,
+  onEditar,
+  onEliminar,
+}: {
+  regla: ReglaAlertaResponse;
+  condicion: string;
+  emergencia: string;
+  onEditar: () => void;
+  onEliminar: () => void;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardCond}>{condicion}</Text>
+          <Text style={styles.cardEmer}>en {emergencia}</Text>
+        </View>
+        <View style={styles.cardAcciones}>
+          <Pressable onPress={onEditar} hitSlop={8}>
+            <MaterialCommunityIcons name="pencil" size={20} color={colors.primario} />
+          </Pressable>
+          <Pressable onPress={onEliminar} hitSlop={8}>
+            <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
+          </Pressable>
+        </View>
+      </View>
+      <Text style={[styles.badge, { color: colorSeveridad(regla.severidad) }]}>
+        {regla.severidad.toUpperCase()}
+      </Text>
+      <Text style={styles.cardMensaje}>{regla.mensaje}</Text>
+    </View>
+  );
+}
+
 function Chips({
   opciones,
   seleccion,
@@ -347,9 +406,36 @@ const styles = StyleSheet.create({
   nuevoTexto: { color: colors.sobrePrimario, fontWeight: "800" },
   error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
   tablaWrap: { flex: 1, paddingHorizontal: espaciado.xl, paddingBottom: espaciado.xl },
+  vacio: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    textAlign: "center",
+    padding: espaciado.xl,
+  },
   celdaTexto: { color: colors.texto, fontSize: tipografia.etiqueta, lineHeight: 18 },
   badge: { fontSize: tipografia.pequeno, fontWeight: "800" },
   accionesCelda: { flexDirection: "row", gap: espaciado.lg },
+  // Tarjetas (móvil)
+  listaCards: { gap: espaciado.md, paddingBottom: espaciado.md },
+  card: {
+    backgroundColor: colors.tarjeta,
+    borderRadius: radio.md,
+    borderWidth: 1,
+    borderColor: colors.borde,
+    padding: espaciado.lg,
+    gap: espaciado.sm,
+  },
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: espaciado.sm,
+  },
+  cardInfo: { flex: 1, gap: 2 },
+  cardCond: { color: colors.texto, fontSize: tipografia.cuerpo, fontWeight: "700" },
+  cardEmer: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  cardAcciones: { flexDirection: "row", gap: espaciado.lg },
+  cardMensaje: { color: colors.textoTenue, fontSize: tipografia.etiqueta, lineHeight: 18 },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",

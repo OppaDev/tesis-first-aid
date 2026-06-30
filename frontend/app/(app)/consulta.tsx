@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { GrabadorAudio } from "@/src/components/GrabadorAudio";
 import { consultarAudio, consultarTexto } from "@/src/services/consulta";
-import { useAuthStore } from "@/src/store/authStore";
+import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
 import { useResultadoStore } from "@/src/store/resultadoStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { ApiError, ConsultaResponse } from "@/src/types/api";
@@ -22,6 +22,8 @@ import { ApiError, ConsultaResponse } from "@/src/types/api";
 export default function Consulta() {
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
   const token = useAuthStore((s) => s.token);
+  const rol = useAuthStore((s) => s.rol);
+  const esAdmin = rol === ID_ROL_ADMIN;
   const guardarResultado = useResultadoStore((s) => s.setResultado);
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -72,24 +74,35 @@ export default function Consulta() {
           <Text style={styles.logo}>SanFra</Text>
           <Text style={styles.cabeceraSub}>Primeros Auxilios</Text>
         </View>
-        {token ? (
-          <Pressable
-            onPress={cerrarSesion}
-            hitSlop={12}
-            style={({ pressed }) => (pressed ? styles.presionado : null)}
-          >
-            <MaterialCommunityIcons name="logout" size={24} color={colors.textoTenue} />
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={() => router.push("/login")}
-            hitSlop={12}
-            style={({ pressed }) => [styles.loginBtn, pressed ? styles.presionado : null]}
-          >
-            <MaterialCommunityIcons name="login" size={18} color={colors.sobrePrimario} />
-            <Text style={styles.loginTexto}>Iniciar sesión</Text>
-          </Pressable>
-        )}
+        <View style={styles.cabeceraAcciones}>
+          {esAdmin ? (
+            <Pressable
+              onPress={() => router.push("/reglas" as Href)}
+              hitSlop={12}
+              style={({ pressed }) => (pressed ? styles.presionado : null)}
+            >
+              <MaterialCommunityIcons name="shield-account" size={24} color={colors.primario} />
+            </Pressable>
+          ) : null}
+          {token ? (
+            <Pressable
+              onPress={cerrarSesion}
+              hitSlop={12}
+              style={({ pressed }) => (pressed ? styles.presionado : null)}
+            >
+              <MaterialCommunityIcons name="logout" size={24} color={colors.textoTenue} />
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => router.push("/login")}
+              hitSlop={12}
+              style={({ pressed }) => [styles.loginBtn, pressed ? styles.presionado : null]}
+            >
+              <MaterialCommunityIcons name="login" size={18} color={colors.sobrePrimario} />
+              <Text style={styles.loginTexto}>Iniciar sesión</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       <ScrollView
@@ -220,6 +233,11 @@ const styles = StyleSheet.create({
     paddingBottom: espaciado.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.borde,
+  },
+  cabeceraAcciones: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.lg,
   },
   logo: {
     color: colors.texto,

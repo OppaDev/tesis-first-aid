@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -29,6 +30,7 @@ import { ApiError, UsuarioAdmin } from "@/src/types/api";
 import { confirmar } from "@/src/utils/confirmar";
 
 const ID_ROL_USUARIO = 2;
+const ANCHO_TABLA = 768; // >= tabla; < tarjetas con menú de acciones
 
 function aISO(d: Date): string {
   const mes = String(d.getMonth() + 1).padStart(2, "0");
@@ -61,6 +63,12 @@ export default function Usuarios() {
   // Modal de perfil clínico (crear/editar el perfil de un usuario)
   const [perfilCedula, setPerfilCedula] = useState<string | null>(null);
   const [perfilNombre, setPerfilNombre] = useState("");
+
+  // Menú de acciones (3 puntos) en la vista de tarjetas (móvil)
+  const [menuUsuario, setMenuUsuario] = useState<UsuarioAdmin | null>(null);
+
+  const { width } = useWindowDimensions();
+  const esAncho = width >= ANCHO_TABLA;
 
   const cargar = async () => {
     setCargando(true);
@@ -278,12 +286,26 @@ export default function Usuarios() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <View style={styles.tablaWrap}>
-        <Tabla
-          columnas={columnas}
-          datos={usuarios}
-          keyExtractor={(u) => u.cedula}
-          vacioTexto="No hay usuarios registrados"
-        />
+        {esAncho ? (
+          <Tabla
+            columnas={columnas}
+            datos={usuarios}
+            keyExtractor={(u) => u.cedula}
+            vacioTexto="No hay usuarios registrados"
+          />
+        ) : usuarios.length === 0 ? (
+          <Text style={styles.vacio}>No hay usuarios registrados</Text>
+        ) : (
+          <ScrollView contentContainerStyle={styles.listaCards}>
+            {usuarios.map((u) => (
+              <TarjetaUsuario
+                key={u.cedula}
+                usuario={u}
+                onMenu={() => setMenuUsuario(u)}
+              />
+            ))}
+          </ScrollView>
+        )}
         <Paginador offset={offset} limit={LIMITE} total={total} onCambiar={setOffset} />
       </View>
 
@@ -370,7 +392,129 @@ export default function Usuarios() {
         nombre={perfilNombre}
         onClose={() => setPerfilCedula(null)}
       />
+
+      <MenuAcciones
+        usuario={menuUsuario}
+        onCerrar={() => setMenuUsuario(null)}
+        onEditar={abrirEditar}
+        onPerfil={abrirPerfil}
+        onRol={alternarRol}
+        onEliminar={borrar}
+      />
     </View>
+  );
+}
+
+function TarjetaUsuario({
+  usuario,
+  onMenu,
+}: {
+  usuario: UsuarioAdmin;
+  onMenu: () => void;
+}) {
+  const esAdmin = usuario.id_rol === ID_ROL_ADMIN;
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardTop}>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardNombre} numberOfLines={1}>
+            {usuario.nombres} {usuario.apellidos}
+          </Text>
+          <Text style={styles.cardEmail} numberOfLines={1}>
+            {usuario.email}
+          </Text>
+        </View>
+        <Pressable onPress={onMenu} hitSlop={10} style={styles.kebab}>
+          <MaterialCommunityIcons name="dots-vertical" size={22} color={colors.textoTenue} />
+        </Pressable>
+      </View>
+      <View style={styles.cardBottom}>
+        <Text style={styles.cardCedula}>CI: {usuario.cedula}</Text>
+        <View style={[styles.rolBadge, esAdmin ? styles.rolAdmin : null]}>
+          <Text style={[styles.rolTexto, esAdmin ? styles.rolTextoAdmin : null]}>
+            {usuario.nombre_rol ?? "—"}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function MenuAcciones({
+  usuario,
+  onCerrar,
+  onEditar,
+  onPerfil,
+  onRol,
+  onEliminar,
+}: {
+  usuario: UsuarioAdmin | null;
+  onCerrar: () => void;
+  onEditar: (u: UsuarioAdmin) => void;
+  onPerfil: (u: UsuarioAdmin) => void;
+  onRol: (u: UsuarioAdmin) => void;
+  onEliminar: (u: UsuarioAdmin) => void;
+}) {
+  if (!usuario) return null;
+  const esAdmin = usuario.id_rol === ID_ROL_ADMIN;
+
+  // Cierra el menú antes de ejecutar la acción (evita modales superpuestos).
+  const ejecutar = (accion: (u: UsuarioAdmin) => void) => {
+    onCerrar();
+    accion(usuario);
+  };
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onCerrar}>
+      <Pressable style={styles.menuOverlay} onPress={onCerrar}>
+        <Pressable style={styles.menuSheet}>
+          <Text style={styles.menuTitulo} numberOfLines={1}>
+            {usuario.nombres} {usuario.apellidos}
+          </Text>
+
+          <MenuItem icono="pencil" texto="Editar datos" onPress={() => ejecutar(onEditar)} />
+          <MenuItem
+            icono="clipboard-pulse-outline"
+            texto="Perfil clínico"
+            onPress={() => ejecutar(onPerfil)}
+          />
+          <MenuItem
+            icono={esAdmin ? "account-arrow-down" : "shield-account"}
+            texto={esAdmin ? "Quitar administrador" : "Hacer administrador"}
+            onPress={() => ejecutar(onRol)}
+          />
+          <MenuItem
+            icono="trash-can-outline"
+            texto="Eliminar"
+            peligro
+            onPress={() => ejecutar(onEliminar)}
+          />
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
+
+function MenuItem({
+  icono,
+  texto,
+  onPress,
+  peligro,
+}: {
+  icono: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  texto: string;
+  onPress: () => void;
+  peligro?: boolean;
+}) {
+  const color = peligro ? colors.error : colors.texto;
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.menuItem, pressed ? styles.menuItemPress : null]}
+    >
+      <MaterialCommunityIcons name={icono} size={20} color={peligro ? colors.error : colors.primario} />
+      <Text style={[styles.menuItemTexto, { color }]}>{texto}</Text>
+    </Pressable>
   );
 }
 
@@ -397,6 +541,69 @@ const styles = StyleSheet.create({
   nuevoTexto: { color: colors.sobrePrimario, fontWeight: "800" },
   error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
   tablaWrap: { flex: 1, paddingHorizontal: espaciado.xl, paddingBottom: espaciado.xl },
+  vacio: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    textAlign: "center",
+    padding: espaciado.xl,
+  },
+  // Tarjetas (móvil)
+  listaCards: { gap: espaciado.md, paddingBottom: espaciado.md },
+  card: {
+    backgroundColor: colors.tarjeta,
+    borderRadius: radio.md,
+    borderWidth: 1,
+    borderColor: colors.borde,
+    padding: espaciado.lg,
+    gap: espaciado.md,
+  },
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: espaciado.sm,
+  },
+  cardInfo: { flex: 1, gap: 2 },
+  cardNombre: { color: colors.texto, fontSize: tipografia.cuerpo, fontWeight: "700" },
+  cardEmail: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  kebab: { padding: espaciado.xs, marginTop: -espaciado.xs, marginRight: -espaciado.xs },
+  cardBottom: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  cardCedula: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  // Menú de acciones (3 puntos)
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  menuSheet: {
+    backgroundColor: colors.superficie,
+    borderTopLeftRadius: radio.lg,
+    borderTopRightRadius: radio.lg,
+    padding: espaciado.lg,
+    paddingBottom: espaciado.xxl,
+    gap: espaciado.xs,
+  },
+  menuTitulo: {
+    color: colors.textoTenue,
+    fontSize: tipografia.pequeno,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: espaciado.sm,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.md,
+    paddingVertical: espaciado.md,
+    paddingHorizontal: espaciado.sm,
+    borderRadius: radio.md,
+  },
+  menuItemPress: { backgroundColor: colors.fondo },
+  menuItemTexto: { fontSize: tipografia.cuerpo, fontWeight: "600" },
   celdaTexto: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
   celdaFuerte: { color: colors.texto, fontSize: tipografia.etiqueta, fontWeight: "700" },
   rolBadge: {

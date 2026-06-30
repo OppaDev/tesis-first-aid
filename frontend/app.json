@@ -39,7 +39,12 @@
           }
         }
       ],
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "SanFra usa el micrófono para que describas la emergencia por voz."
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {

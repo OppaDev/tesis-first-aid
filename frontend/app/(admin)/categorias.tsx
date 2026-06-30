@@ -4,13 +4,16 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
 import { Campo } from "@/src/components/Campo";
+import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
   actualizarCategoria,
@@ -28,6 +31,9 @@ interface FilaCategoria {
   numCondiciones: number;
 }
 
+const ANCHO_TABLA = 768; // >= tabla; < tarjetas
+const LIMITE = 20;
+
 export default function Categorias() {
   const [categorias, setCategorias] = useState<FilaCategoria[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -38,6 +44,19 @@ export default function Categorias() {
   const [nombre, setNombre] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
+
+  const { width } = useWindowDimensions();
+  const esAncho = width >= ANCHO_TABLA;
+  const [offset, setOffset] = useState(0);
+  // Paginación del lado del cliente (el catálogo se carga completo).
+  const pagina = categorias.slice(offset, offset + LIMITE);
+
+  // Si tras borrar la página queda vacía, retrocede.
+  useEffect(() => {
+    if (offset > 0 && offset >= categorias.length) {
+      setOffset(Math.max(0, offset - LIMITE));
+    }
+  }, [categorias.length, offset]);
 
   const cargar = async () => {
     setCargando(true);
@@ -169,12 +188,28 @@ export default function Categorias() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <View style={styles.tablaWrap}>
-        <Tabla
-          columnas={columnas}
-          datos={categorias}
-          keyExtractor={(c) => String(c.id_categoria)}
-          vacioTexto="No hay categorías"
-        />
+        {esAncho ? (
+          <Tabla
+            columnas={columnas}
+            datos={pagina}
+            keyExtractor={(c) => String(c.id_categoria)}
+            vacioTexto="No hay categorías"
+          />
+        ) : categorias.length === 0 ? (
+          <Text style={styles.vacio}>No hay categorías</Text>
+        ) : (
+          <ScrollView contentContainerStyle={styles.listaCards}>
+            {pagina.map((c) => (
+              <TarjetaCategoria
+                key={c.id_categoria}
+                categoria={c}
+                onEditar={() => abrirEditar(c)}
+                onEliminar={() => borrar(c)}
+              />
+            ))}
+          </ScrollView>
+        )}
+        <Paginador offset={offset} limit={LIMITE} total={categorias.length} onCambiar={setOffset} />
       </View>
 
       <Modal visible={modal} transparent animationType="fade" onRequestClose={() => setModal(false)}>
@@ -204,6 +239,36 @@ export default function Categorias() {
   );
 }
 
+function TarjetaCategoria({
+  categoria,
+  onEditar,
+  onEliminar,
+}: {
+  categoria: FilaCategoria;
+  onEditar: () => void;
+  onEliminar: () => void;
+}) {
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardInfo}>
+        <Text style={styles.cardNombre}>{categoria.nombre_categoria}</Text>
+        <Text style={styles.cardSub}>
+          {categoria.numCondiciones}{" "}
+          {categoria.numCondiciones === 1 ? "condición" : "condiciones"}
+        </Text>
+      </View>
+      <View style={styles.cardAcciones}>
+        <Pressable onPress={onEditar} hitSlop={8}>
+          <MaterialCommunityIcons name="pencil" size={20} color={colors.primario} />
+        </Pressable>
+        <Pressable onPress={onEliminar} hitSlop={8}>
+          <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   centro: { flex: 1, alignItems: "center", justifyContent: "center" },
@@ -227,9 +292,32 @@ const styles = StyleSheet.create({
   nuevoTexto: { color: colors.sobrePrimario, fontWeight: "800" },
   error: { color: colors.error, fontSize: tipografia.etiqueta, paddingHorizontal: espaciado.xl },
   tablaWrap: { flex: 1, paddingHorizontal: espaciado.xl, paddingBottom: espaciado.xl },
+  vacio: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    textAlign: "center",
+    padding: espaciado.xl,
+  },
   celdaTexto: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
   celdaFuerte: { color: colors.texto, fontSize: tipografia.etiqueta, fontWeight: "700" },
   accionesCelda: { flexDirection: "row", gap: espaciado.lg },
+  // Tarjetas (móvil)
+  listaCards: { gap: espaciado.md, paddingBottom: espaciado.md },
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: espaciado.sm,
+    backgroundColor: colors.tarjeta,
+    borderRadius: radio.md,
+    borderWidth: 1,
+    borderColor: colors.borde,
+    padding: espaciado.lg,
+  },
+  cardInfo: { flex: 1, gap: 2 },
+  cardNombre: { color: colors.texto, fontSize: tipografia.cuerpo, fontWeight: "700" },
+  cardSub: { color: colors.textoTenue, fontSize: tipografia.etiqueta },
+  cardAcciones: { flexDirection: "row", gap: espaciado.lg },
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",

@@ -15,7 +15,7 @@ const ITEMS: { href: Href; label: string; icono: NombreIcono }[] = [
   { href: "/usuarios" as Href, label: "Usuarios", icono: "account-group" },
 ];
 
-const ANCHO_SIDEBAR = 768; // breakpoint: >= usa sidebar; < usa barra superior
+const ANCHO_SIDEBAR = 768; // breakpoint: >= usa sidebar lateral; < usa barra inferior
 
 export default function AdminLayout() {
   const hidratado = useAuthStore((s) => s.hidratado);
@@ -41,12 +41,14 @@ export default function AdminLayout() {
     );
   }
 
+  // Teléfonos: encabezado simple arriba + barra de navegación inferior.
   return (
     <View style={styles.columnaRaiz}>
-      <TopBar onSalir={cerrarSesion} />
+      <HeaderMovil onSalir={cerrarSesion} />
       <View style={styles.contenido}>
         <Slot />
       </View>
+      <BottomNav />
     </View>
   );
 }
@@ -64,9 +66,11 @@ function Sidebar({ onSalir }: { onSalir: () => void }) {
 
       <View style={styles.navVertical}>
         {ITEMS.map((item) => (
-          <NavItem key={item.label} item={item} vertical />
+          <NavItem key={item.label} item={item} />
         ))}
       </View>
+
+      <IrAlaApp vertical />
 
       <Pressable onPress={onSalir} style={styles.salirSidebar} hitSlop={8}>
         <MaterialCommunityIcons name="logout" size={20} color={colors.textoTenue} />
@@ -76,32 +80,60 @@ function Sidebar({ onSalir }: { onSalir: () => void }) {
   );
 }
 
-function TopBar({ onSalir }: { onSalir: () => void }) {
+function IrAlaApp({ vertical }: { vertical?: boolean }) {
+  const router = useRouter();
+  if (vertical) {
+    return (
+      <Pressable
+        onPress={() => router.push("/consulta" as Href)}
+        style={styles.salirSidebar}
+        hitSlop={8}
+      >
+        <MaterialCommunityIcons name="medical-bag" size={20} color={colors.primario} />
+        <Text style={[styles.salirTexto, { color: colors.primario }]}>Ir a la app</Text>
+      </Pressable>
+    );
+  }
+  return (
+    <Pressable
+      onPress={() => router.push("/consulta" as Href)}
+      style={styles.salirTop}
+      hitSlop={8}
+    >
+      <MaterialCommunityIcons name="medical-bag" size={22} color={colors.primario} />
+    </Pressable>
+  );
+}
+
+function HeaderMovil({ onSalir }: { onSalir: () => void }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.topbar, { paddingTop: insets.top + espaciado.md }]}>
+    <View style={[styles.header, { paddingTop: insets.top + espaciado.md }]}>
       <Text style={styles.logoTop}>
-        SanFra <Text style={styles.logoAdmin}>Admin</Text>
+        SanFra · <Text style={styles.logoAdmin}>Admin</Text>
       </Text>
-      <View style={styles.navHorizontal}>
-        {ITEMS.map((item) => (
-          <NavItem key={item.label} item={item} vertical={false} />
-        ))}
+      <View style={styles.headerAcciones}>
+        <IrAlaApp />
         <Pressable onPress={onSalir} style={styles.salirTop} hitSlop={8}>
-          <MaterialCommunityIcons name="logout" size={18} color={colors.textoTenue} />
+          <MaterialCommunityIcons name="logout" size={22} color={colors.textoTenue} />
         </Pressable>
       </View>
     </View>
   );
 }
 
-function NavItem({
-  item,
-  vertical,
-}: {
-  item: { href: Href; label: string; icono: NombreIcono };
-  vertical: boolean;
-}) {
+function BottomNav() {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.bottomBar, { paddingBottom: insets.bottom + espaciado.xs }]}>
+      {ITEMS.map((item) => (
+        <BottomNavItem key={item.label} item={item} />
+      ))}
+    </View>
+  );
+}
+
+function NavItem({ item }: { item: (typeof ITEMS)[number] }) {
   const router = useRouter();
   const pathname = usePathname();
   const activo = pathname === item.href;
@@ -109,10 +141,7 @@ function NavItem({
   return (
     <Pressable
       onPress={() => router.push(item.href)}
-      style={[
-        vertical ? styles.itemVertical : styles.itemHorizontal,
-        activo ? styles.itemActivo : null,
-      ]}
+      style={[styles.itemVertical, activo ? styles.itemActivo : null]}
     >
       <MaterialCommunityIcons
         name={item.icono}
@@ -120,6 +149,26 @@ function NavItem({
         color={activo ? colors.sobrePrimario : colors.textoTenue}
       />
       <Text style={[styles.itemTexto, activo ? styles.itemTextoActivo : null]}>
+        {item.label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function BottomNavItem({ item }: { item: (typeof ITEMS)[number] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const activo = pathname === item.href;
+  const color = activo ? colors.primario : colors.textoTenue;
+
+  return (
+    <Pressable
+      onPress={() => router.push(item.href)}
+      style={styles.bottomItem}
+      hitSlop={4}
+    >
+      <MaterialCommunityIcons name={item.icono} size={24} color={color} />
+      <Text style={[styles.bottomLabel, { color }]} numberOfLines={1}>
         {item.label}
       </Text>
     </Pressable>
@@ -190,8 +239,25 @@ const styles = StyleSheet.create({
     paddingVertical: espaciado.md,
     paddingHorizontal: espaciado.md,
   },
-  // TopBar (móvil)
-  topbar: {
+  itemActivo: {
+    backgroundColor: colors.primario,
+  },
+  itemTexto: {
+    color: colors.textoTenue,
+    fontSize: tipografia.cuerpo,
+    fontWeight: "600",
+  },
+  itemTextoActivo: {
+    color: colors.sobrePrimario,
+    fontWeight: "700",
+  },
+  salirTexto: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    fontWeight: "600",
+  },
+  // Encabezado móvil
+  header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -209,39 +275,32 @@ const styles = StyleSheet.create({
   logoAdmin: {
     color: colors.primario,
   },
-  navHorizontal: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espaciado.xs,
-  },
-  itemHorizontal: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: espaciado.xs,
-    paddingVertical: espaciado.sm,
-    paddingHorizontal: espaciado.md,
-    borderRadius: radio.md,
-  },
   salirTop: {
     paddingVertical: espaciado.sm,
     paddingHorizontal: espaciado.sm,
   },
-  // Compartido
-  itemActivo: {
-    backgroundColor: colors.primario,
+  headerAcciones: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.sm,
   },
-  itemTexto: {
-    color: colors.textoTenue,
-    fontSize: tipografia.cuerpo,
-    fontWeight: "600",
+  // Barra de navegación inferior (móvil)
+  bottomBar: {
+    flexDirection: "row",
+    backgroundColor: colors.superficie,
+    borderTopWidth: 1,
+    borderTopColor: colors.borde,
+    paddingTop: espaciado.sm,
   },
-  itemTextoActivo: {
-    color: colors.sobrePrimario,
-    fontWeight: "700",
+  bottomItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+    paddingHorizontal: espaciado.xs,
   },
-  salirTexto: {
-    color: colors.textoTenue,
-    fontSize: tipografia.etiqueta,
+  bottomLabel: {
+    fontSize: tipografia.pequeno,
     fontWeight: "600",
   },
 });
