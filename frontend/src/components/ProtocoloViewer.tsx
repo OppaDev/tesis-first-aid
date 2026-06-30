@@ -10,6 +10,21 @@ import { IMAGENES_PROTOCOLOS } from "@/src/data/imagenesProtocolos";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { Protocolo } from "@/src/types/api";
 
+// Nombre legible del anexo según el prefijo de su id (los protocolos son fijos
+// por la Regla de Oro). Sirve para distinguir anexos cuyo primer paso es igual
+// (p. ej. RCP adulto vs bebé comparten "Llame al 911").
+const NOMBRES_ANEXO: { prefijo: string; nombre: string }[] = [
+  { prefijo: "RCPA", nombre: "RCP adulto" },
+  { prefijo: "RCPB", nombre: "RCP bebé" },
+  { prefijo: "TQ", nombre: "Torniquete" },
+  { prefijo: "HA", nombre: "Atragantamiento (adulto)" },
+];
+
+function nombreAnexo(id: string): string {
+  const m = NOMBRES_ANEXO.find((n) => id.startsWith(n.prefijo));
+  return m ? `Ver anexo: ${m.nombre}` : "Ver anexo";
+}
+
 export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   const porId = useMemo(() => {
     const mapa = new Map<string, Protocolo>();
@@ -23,12 +38,15 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
   const [actualId, setActualId] = useState(inicial);
   const [historial, setHistorial] = useState<string[]>([]);
   const [vozActiva, setVozActiva] = useState(true);
+  // Paso del flujo principal desde el que se entró a un anexo (para volver).
+  const [retorno, setRetorno] = useState<string | null>(null);
 
   // Al recibir un protocolo nuevo (otra consulta), reiniciar la navegación:
   // los ids del protocolo anterior ya no existen en el nuevo mapa.
   useEffect(() => {
     setActualId(inicial);
     setHistorial([]);
+    setRetorno(null);
   }, [protocolos, inicial]);
 
   const paso = porId.get(actualId);
@@ -86,11 +104,25 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
     setActualId(destino);
   };
 
+  // Entrar a un anexo: recuerda el paso actual del flujo principal para poder
+  // regresar a él cuando el rescatista termine (o cancele) el anexo.
+  const irAnexo = (destino: string) => {
+    setRetorno(actualId);
+    ir(destino);
+  };
+
+  const volverAlProtocolo = () => {
+    if (!retorno) return;
+    setActualId(retorno);
+    setRetorno(null);
+  };
+
   const atras = () => {
     setHistorial((h) => {
       if (h.length === 0) return h;
       const copia = [...h];
       const previo = copia.pop() as string;
+      if (previo === retorno) setRetorno(null);
       setActualId(previo);
       return copia;
     });
@@ -98,13 +130,17 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
 
   const reiniciar = () => {
     setHistorial([]);
+    setRetorno(null);
     setActualId(inicial);
   };
 
   const esDecision = paso.es_condicion;
   const sigSi = paso.paso?.paso_siguiente ?? null;
   const sigNo = paso.paso?.paso_siguiente_no ?? null;
-  const anexo = paso.paso?.anexo_si ?? null;
+  // Un paso puede tener uno o varios anexos (sub-protocolos). NO es una decisión
+  // sí/no: las dos columnas guardan anexos distintos (p. ej. RCP adulto y bebé).
+  const anexos = [paso.paso?.anexo_si, paso.paso?.anexo_no].filter(existe);
+  const enAnexo = retorno !== null && actualId !== retorno;
   const esFin = !esDecision && !existe(sigSi);
   const fuenteImagen = paso.imagen ? IMAGENES_PROTOCOLOS[paso.imagen] : undefined;
 
@@ -170,16 +206,20 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
           />
         ) : null}
 
-        {existe(anexo) ? (
-          <Pressable onPress={() => ir(anexo)} style={styles.anexo}>
+        {anexos.map((idAnexo) => (
+          <Pressable
+            key={idAnexo}
+            onPress={() => irAnexo(idAnexo)}
+            style={styles.anexo}
+          >
             <MaterialCommunityIcons
               name="file-document-outline"
               size={16}
               color={colors.primario}
             />
-            <Text style={styles.anexoTexto}>Ver anexo</Text>
+            <Text style={styles.anexoTexto}>{nombreAnexo(idAnexo)}</Text>
           </Pressable>
-        ) : null}
+        ))}
       </View>
 
       {/* Navegación según el tipo de nodo */}
@@ -223,6 +263,19 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
           <MaterialCommunityIcons name="chevron-right" size={22} color={colors.sobrePrimario} />
         </Pressable>
       )}
+
+      {enAnexo ? (
+        <Pressable
+          onPress={volverAlProtocolo}
+          style={({ pressed }) => [
+            styles.volverProtocolo,
+            pressed ? styles.presionado : null,
+          ]}
+        >
+          <MaterialCommunityIcons name="arrow-u-left-top" size={18} color={colors.primario} />
+          <Text style={styles.volverProtocoloTexto}>Volver al protocolo</Text>
+        </Pressable>
+      ) : null}
 
       <View style={styles.secundarios}>
         {historial.length > 0 ? (
@@ -337,6 +390,21 @@ const styles = StyleSheet.create({
   anexoTexto: {
     color: colors.primario,
     fontSize: tipografia.etiqueta,
+    fontWeight: "700",
+  },
+  volverProtocolo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: espaciado.xs,
+    height: 48,
+    borderRadius: radio.md,
+    borderWidth: 1,
+    borderColor: colors.primario,
+  },
+  volverProtocoloTexto: {
+    color: colors.primario,
+    fontSize: tipografia.cuerpo,
     fontWeight: "700",
   },
   decision: {

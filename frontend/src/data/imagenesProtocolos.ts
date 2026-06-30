@@ -52,7 +52,7 @@ export const IMAGENES_PROTOCOLOS: Record<string, ImageSourcePropType> = {
   "P0029.png": require("../../assets/imagenes/P0029.png"),
   "P0030.png": require("../../assets/imagenes/P0030.png"),
   "P0031.png": require("../../assets/imagenes/P0031.png"),
-  "P0034.png": require("../../assets/imagenes/P0034.png"),
+  "C0034.png": require("../../assets/imagenes/C0034.png"),
   "P0035.png": require("../../assets/imagenes/P0035.png"),
   "P0036.png": require("../../assets/imagenes/P0036.png"),
   "P0038.png": require("../../assets/imagenes/P0038.png"),
