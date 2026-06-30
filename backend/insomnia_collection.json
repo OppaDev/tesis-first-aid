@@ -203,6 +203,23 @@
       "metaSortKey": -1.5
     },
     {
+      "_id": "req_usuarios_perfil_post",
+      "_type": "request",
+      "parentId": "fld_admin_usuarios",
+      "name": "Crear perfil clínico de un usuario (POST)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/admin/usuarios/0402084040/perfil",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"genero\": \"masculino\",\n  \"tipo_sangre\": \"O+\",\n  \"altura_cm\": 175,\n  \"peso_kg\": 70,\n  \"condiciones\": [\n    { \"id_condicion\": 1, \"detalle\": \"Diabetes tipo 2\" }\n  ]\n}"
+      },
+      "metaSortKey": -1.4
+    },
+    {
       "_id": "req_reglas_listar",
       "_type": "request",
       "parentId": "fld_admin_reglas",

@@ -13,6 +13,7 @@ import {
 import { Boton } from "@/src/components/Boton";
 import { Campo } from "@/src/components/Campo";
 import { Paginador } from "@/src/components/Paginador";
+import { PerfilClinicoUsuarioModal } from "@/src/components/PerfilClinicoUsuarioModal";
 import { SelectorFecha } from "@/src/components/SelectorFecha";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
@@ -56,6 +57,10 @@ export default function Usuarios() {
   const [idRol, setIdRol] = useState<number>(ID_ROL_USUARIO);
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
+
+  // Modal de perfil clínico (crear/editar el perfil de un usuario)
+  const [perfilCedula, setPerfilCedula] = useState<string | null>(null);
+  const [perfilNombre, setPerfilNombre] = useState("");
 
   const cargar = async () => {
     setCargando(true);
@@ -157,6 +162,11 @@ export default function Usuarios() {
     }
   };
 
+  const abrirPerfil = (u: UsuarioAdmin) => {
+    setPerfilNombre(`${u.nombres} ${u.apellidos}`);
+    setPerfilCedula(u.cedula);
+  };
+
   const borrar = async (u: UsuarioAdmin) => {
     const ok = await confirmar(
       "Eliminar usuario",
@@ -220,6 +230,13 @@ export default function Usuarios() {
           <View style={styles.accionesCelda}>
             <Pressable onPress={() => abrirEditar(u)} hitSlop={8}>
               <MaterialCommunityIcons name="pencil" size={18} color={colors.primario} />
+            </Pressable>
+            <Pressable onPress={() => abrirPerfil(u)} hitSlop={8}>
+              <MaterialCommunityIcons
+                name="clipboard-pulse-outline"
+                size={18}
+                color={colors.primario}
+              />
             </Pressable>
             <Pressable onPress={() => alternarRol(u)} hitSlop={8}>
               <MaterialCommunityIcons
@@ -347,6 +364,12 @@ export default function Usuarios() {
           </View>
         </View>
       </Modal>
+
+      <PerfilClinicoUsuarioModal
+        cedula={perfilCedula}
+        nombre={perfilNombre}
+        onClose={() => setPerfilCedula(null)}
+      />
     </View>
   );
 }

@@ -18,6 +18,7 @@ from app.application.use_cases.actualizar_parcial_perfil_clinico import Actualiz
 from app.application.use_cases.actualizar_perfil_clinico import ActualizarPerfilClinicoUseCase
 from app.application.use_cases.actualizar_usuario_admin import ActualizarUsuarioAdminUseCase
 from app.application.use_cases.cambiar_rol_usuario import CambiarRolUsuarioUseCase
+from app.application.use_cases.crear_perfil_clinico import CrearPerfilClinicoUseCase
 from app.application.use_cases.crear_usuario_admin import CrearUsuarioAdminUseCase
 from app.application.use_cases.eliminar_usuario_admin import EliminarUsuarioAdminUseCase
 from app.application.use_cases.listar_usuarios import ListarUsuariosUseCase
@@ -109,7 +110,7 @@ async def cambiar_rol(cedula: str, dto: CambiarRolRequestDTO, db: AsyncSession =
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El rol indicado no existe")
 
 
-# --- Perfil clínico de un usuario (el médico/admin edita el detalle de sus condiciones) ---
+# --- Perfil clínico de un usuario (el médico/admin lo crea y edita) ---
 
 @router.get("/{cedula}/perfil", response_model=PerfilClinicoResponseDTO)
 async def obtener_perfil(cedula: str, db: AsyncSession = Depends(get_db)):
@@ -118,6 +119,16 @@ async def obtener_perfil(cedula: str, db: AsyncSession = Depends(get_db)):
         return await ObtenerPerfilClinicoUseCase(repo).ejecutar(cedula)
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/{cedula}/perfil", response_model=PerfilClinicoResponseDTO, status_code=status.HTTP_201_CREATED)
+async def crear_perfil(cedula: str, dto: PerfilClinicoRequestDTO, db: AsyncSession = Depends(get_db)):
+    """El admin crea el perfil clínico de un usuario que aún no lo tiene."""
+    try:
+        repo = PerfilClinicoRepositoryImpl(db)
+        return await CrearPerfilClinicoUseCase(repo).ejecutar(cedula, dto)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.put("/{cedula}/perfil", response_model=PerfilClinicoResponseDTO)

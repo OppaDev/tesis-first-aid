@@ -13,6 +13,8 @@ import {
   CondicionAdminResponse,
   CrearUsuarioRequest,
   Pagina,
+  PerfilRequest,
+  PerfilResponse,
   ReglaAlertaRequest,
   ReglaAlertaResponse,
   UsuarioAdmin,
@@ -113,4 +115,23 @@ export function actualizarUsuario(
 
 export function eliminarUsuario(cedula: string): Promise<void> {
   return del(`/admin/usuarios/${cedula}`);
+}
+
+// --- Perfil clínico de un usuario (gestionado por el admin/médico) ---
+export function obtenerPerfilUsuario(cedula: string): Promise<PerfilResponse> {
+  return getJson<PerfilResponse>(`/admin/usuarios/${cedula}/perfil`);
+}
+
+export function crearPerfilUsuario(
+  cedula: string,
+  datos: PerfilRequest,
+): Promise<PerfilResponse> {
+  return postJson<PerfilResponse>(`/admin/usuarios/${cedula}/perfil`, datos);
+}
+
+export function actualizarPerfilUsuario(
+  cedula: string,
+  datos: PerfilRequest,
+): Promise<PerfilResponse> {
+  return putJson<PerfilResponse>(`/admin/usuarios/${cedula}/perfil`, datos);
 }
