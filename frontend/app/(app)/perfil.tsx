@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Boton } from "@/src/components/Boton";
+import { CambiarPasswordModal } from "@/src/components/CambiarPasswordModal";
 import { Campo } from "@/src/components/Campo";
 import { CondicionSelector } from "@/src/components/CondicionSelector";
 import { Selector } from "@/src/components/Selector";
@@ -48,6 +49,7 @@ export default function Perfil() {
   const [perfil, setPerfil] = useState<PerfilResponse | null>(null);
   const [catalogo, setCatalogo] = useState<CategoriaConCondiciones[]>([]);
   const [modo, setModo] = useState<"ver" | "editar">("ver");
+  const [cambiarPass, setCambiarPass] = useState(false);
 
   // Campos del formulario
   const [genero, setGenero] = useState("");
@@ -215,12 +217,25 @@ export default function Perfil() {
     <View style={styles.flex}>
       <View style={[styles.cabecera, { paddingTop: insets.top + espaciado.md }]}>
         <Text style={styles.titulo}>Mi perfil clínico</Text>
-        {esAdmin ? (
-          <Pressable onPress={() => router.push("/reglas" as Href)} hitSlop={12}>
-            <MaterialCommunityIcons name="shield-account" size={24} color={colors.primario} />
+        <View style={styles.cabeceraAcciones}>
+          <Pressable onPress={() => setCambiarPass(true)} hitSlop={12}>
+            <MaterialCommunityIcons name="lock-reset" size={24} color={colors.primario} />
           </Pressable>
-        ) : null}
+          {esAdmin ? (
+            <Pressable onPress={() => router.push("/reglas" as Href)} hitSlop={12}>
+              <MaterialCommunityIcons name="shield-account" size={24} color={colors.primario} />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
+
+      <CambiarPasswordModal
+        visible={cambiarPass}
+        onClose={() => setCambiarPass(false)}
+        onExito={() =>
+          Alert.alert("Contraseña actualizada", "Tu contraseña se cambió correctamente.")
+        }
+      />
 
       <ScrollView
         contentContainerStyle={[
@@ -435,6 +450,11 @@ const styles = StyleSheet.create({
     paddingBottom: espaciado.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.borde,
+  },
+  cabeceraAcciones: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.lg,
   },
   titulo: {
     color: colors.texto,

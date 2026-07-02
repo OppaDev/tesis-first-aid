@@ -14,6 +14,16 @@ export function registro(datos: RegistroRequest): Promise<UsuarioResponse> {
   return postJson<UsuarioResponse>("/auth/registro", datos);
 }
 
+export function cambiarPassword(
+  passwordActual: string,
+  passwordNueva: string,
+): Promise<TokenResponse> {
+  return postJson<TokenResponse>("/auth/cambiar-password", {
+    password_actual: passwordActual,
+    password_nueva: passwordNueva,
+  });
+}
+
 /**
  * Cierra la sesión en el servidor (revoca los JWT vigentes del usuario).
  * Es "best-effort": usa el token explícito y silencia cualquier error de red

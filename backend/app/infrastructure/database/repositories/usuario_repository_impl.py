@@ -69,6 +69,12 @@ class UsuarioRepositoryImpl(UsuarioRepository):
         await self._session.commit()
         return await self.obtener_por_cedula(cedula)
 
+    async def actualizar_password(self, cedula: str, password_hash: str) -> None:
+        model = await self._session.get(UsuarioModel, cedula)
+        if model is not None:
+            model.password = password_hash
+            await self._session.commit()
+
     async def eliminar(self, cedula: str) -> None:
         model = await self._session.get(UsuarioModel, cedula)
         if model is not None:

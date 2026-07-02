@@ -29,6 +29,9 @@ class UsuarioRepository(ABC):
     ) -> Usuario | None: ...
 
     @abstractmethod
+    async def actualizar_password(self, cedula: str, password_hash: str) -> None: ...
+
+    @abstractmethod
     async def eliminar(self, cedula: str) -> None: ...
 
     @abstractmethod

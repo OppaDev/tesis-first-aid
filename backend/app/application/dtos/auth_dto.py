@@ -24,6 +24,16 @@ class LoginRequestDTO(BaseModel):
     password: str
 
 
+class CambiarPasswordRequestDTO(BaseModel):
+    password_actual: str
+    password_nueva: str = Field(..., min_length=8)
+
+    @field_validator("password_nueva")
+    @classmethod
+    def _validar_password(cls, v: str) -> str:
+        return validar_password(v)
+
+
 class TokenResponseDTO(BaseModel):
     access_token: str
     token_type: str = "bearer"

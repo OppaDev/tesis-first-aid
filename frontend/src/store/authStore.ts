@@ -3,6 +3,7 @@ import { create } from "zustand";
 
 import { setAuthToken } from "@/src/services/api";
 import {
+  cambiarPassword as apiCambiarPassword,
   login as apiLogin,
   logout as apiLogout,
   registro as apiRegistro,
@@ -38,6 +39,7 @@ interface AuthState {
   hidratar: () => Promise<void>;
   iniciarSesion: (datos: LoginRequest) => Promise<void>;
   registrar: (datos: RegistroRequest) => Promise<void>;
+  cambiarPassword: (actual: string, nueva: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
 }
 
@@ -79,6 +81,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       email: datos.email,
       password: datos.password,
     });
+    const rol = await persistir(access_token);
+    set({ token: access_token, rol });
+  },
+
+  cambiarPassword: async (actual, nueva) => {
+    // El back devuelve un token nuevo (las otras sesiones quedan revocadas).
+    const { access_token } = await apiCambiarPassword(actual, nueva);
     const rol = await persistir(access_token);
     set({ token: access_token, rol });
   },

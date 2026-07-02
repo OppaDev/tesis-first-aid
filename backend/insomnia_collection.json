@@ -449,6 +449,23 @@
       "metaSortKey": -0.5
     },
     {
+      "_id": "req_cambiar_password",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Cambiar contraseña (devuelve token nuevo)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/cambiar-password",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"password_actual\": \"Sanfra#2026\",\n  \"password_nueva\": \"Sanfra#2027\"\n}"
+      },
+      "metaSortKey": -0.25
+    },
+    {
       "_id": "req_condiciones_catalogo",
       "_type": "request",
       "parentId": "fld_perfil",
