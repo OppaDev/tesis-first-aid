@@ -1,0 +1,16 @@
+# Secretos y entorno local (las variables llegan por docker-compose)
+.env
+
+# Artefactos de desarrollo
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+test/
+pytest.ini
+insomnia_collection.json
+Dockerfile
+.dockerignore
+.gitignore

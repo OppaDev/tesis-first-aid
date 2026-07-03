@@ -1,0 +1,46 @@
+# SanFra — primeros auxilios: PostgreSQL + API FastAPI + panel web (nginx)
+# Variables: copiar .env.docker.example a .env y completar los valores.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: firstaid
+      POSTGRES_USER: firstaid
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U firstaid -d firstaid"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://firstaid:${POSTGRES_PASSWORD}@db:5432/firstaid
+      SECRET_KEY: ${SECRET_KEY:?Definir SECRET_KEY en .env}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Caché del modelo Whisper (se descarga solo la primera vez)
+      - hf_cache:/data/hf-cache
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # URL del backend vista DESDE EL NAVEGADOR (queda horneada en el bundle web)
+        EXPO_PUBLIC_API_URL: ${API_URL_PUBLICA:-http://localhost:8000}
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  hf_cache:

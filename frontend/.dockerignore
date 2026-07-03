@@ -1,0 +1,12 @@
+# Dependencias y artefactos (se instalan/generan dentro de la imagen)
+node_modules/
+dist/
+.expo/
+android/
+ios/
+
+# Entorno local: la URL del API se pasa como build-arg
+.env
+
+Dockerfile
+.dockerignore

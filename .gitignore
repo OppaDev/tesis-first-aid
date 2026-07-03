@@ -1,2 +1,5 @@
 trabajo-integracion-curricular
 Modelos
+
+# Variables de entorno de docker-compose (contiene secretos)
+.env
