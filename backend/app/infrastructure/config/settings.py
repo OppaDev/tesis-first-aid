@@ -28,5 +28,14 @@ class Settings(BaseSettings):
     # Tamaño máximo del audio de consulta (MB). Evita agotar memoria con subidas grandes.
     max_audio_mb: int = 10
 
+    # Orígenes permitidos para CORS, separados por coma. "*" permite todos
+    # (útil en desarrollo); en producción restringir al dominio del panel web,
+    # p. ej.: "https://panel.tudominio.com,http://localhost:8080".
+    cors_origins: str = "*"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origen.strip() for origen in self.cors_origins.split(",") if origen.strip()]
+
 
 settings = Settings()
