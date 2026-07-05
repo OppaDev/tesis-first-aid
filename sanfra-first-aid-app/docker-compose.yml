@@ -12,6 +12,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+    networks:
+      - sanfra_net
     restart: unless-stopped
 
   backend:
@@ -21,22 +23,33 @@ services:
       SECRET_KEY: ${SECRET_KEY:?Definir SECRET_KEY en .env}
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
     volumes:
       # Caché del modelo Whisper (se descarga solo la primera vez)
       - hf_cache:/data/hf-cache
+    networks:
+      - sanfra_net
     restart: unless-stopped
 
   frontend:
     image: oppadev/web-first-aid:latest
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT:-8080}:80"
     depends_on:
       - backend
+    networks:
+      - sanfra_net
     restart: unless-stopped
+
+networks:
+  sanfra_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16
 
 volumes:
   pgdata:

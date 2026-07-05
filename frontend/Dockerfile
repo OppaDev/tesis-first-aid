@@ -11,9 +11,14 @@ RUN npm ci
 COPY . .
 
 # Las variables EXPO_PUBLIC_* se hornean en el bundle en tiempo de build
-# (no son secretos). Ajustar a la URL pública del backend.
+# (no son secretos). Los valores por defecto replican los del código
+# (src/config/voz.ts); la URL debe ajustarse a la del backend público.
 ARG EXPO_PUBLIC_API_URL=http://localhost:8000
-ENV EXPO_PUBLIC_API_URL=${EXPO_PUBLIC_API_URL}
+ARG EXPO_PUBLIC_VOZ_VELOCIDAD=1.15
+ARG EXPO_PUBLIC_VOZ_IDIOMA=es
+ENV EXPO_PUBLIC_API_URL=${EXPO_PUBLIC_API_URL} \
+    EXPO_PUBLIC_VOZ_VELOCIDAD=${EXPO_PUBLIC_VOZ_VELOCIDAD} \
+    EXPO_PUBLIC_VOZ_IDIOMA=${EXPO_PUBLIC_VOZ_IDIOMA}
 
 RUN npx expo export --platform web
 

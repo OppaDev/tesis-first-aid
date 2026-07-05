@@ -8,7 +8,9 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.tudominio.com"
+        "EXPO_PUBLIC_API_URL": "https://www.oppadev.com",
+        "EXPO_PUBLIC_VOZ_VELOCIDAD": "1.3",
+        "EXPO_PUBLIC_VOZ_IDIOMA": "es"
       }
     },
     "preview": {
@@ -17,7 +19,9 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.tudominio.com"
+        "EXPO_PUBLIC_API_URL": "https://www.oppadev.com",
+        "EXPO_PUBLIC_VOZ_VELOCIDAD": "1.3",
+        "EXPO_PUBLIC_VOZ_IDIOMA": "es"
       }
     },
     "production": {
@@ -26,7 +30,9 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.tudominio.com"
+        "EXPO_PUBLIC_API_URL": "https://www.oppadev.com",
+        "EXPO_PUBLIC_VOZ_VELOCIDAD": "1.3",
+        "EXPO_PUBLIC_VOZ_IDIOMA": "es"
       }
     }
   },
