@@ -120,6 +120,10 @@ export function PerfilClinicoUsuarioModal({
       setError("Altura y peso deben ser números válidos.");
       return;
     }
+    if (!Number.isInteger(alturaNum)) {
+      setError("La altura debe ser un número entero en centímetros.");
+      return;
+    }
 
     const payload = {
       genero,
@@ -188,8 +192,9 @@ export function PerfilClinicoUsuarioModal({
               <Campo
                 etiqueta="Altura (cm)"
                 value={altura}
-                onChangeText={setAltura}
-                keyboardType="numeric"
+                // Centímetros enteros: se descarta cualquier caracter no numérico.
+                onChangeText={(t) => setAltura(t.replace(/[^0-9]/g, ""))}
+                keyboardType="number-pad"
                 placeholder="175"
               />
               <Campo

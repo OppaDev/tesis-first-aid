@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -23,6 +24,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confiar, setConfiar] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
 
@@ -30,7 +32,11 @@ export default function Login() {
     setError(null);
     setCargando(true);
     try {
-      await iniciarSesion({ email: email.trim(), password });
+      await iniciarSesion({
+        email: email.trim(),
+        password,
+        confiar_dispositivo: confiar,
+      });
       router.replace("/"); // index redirige según el rol (admin → panel, usuario → consulta)
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No se pudo iniciar sesión");
@@ -75,6 +81,24 @@ export default function Login() {
             secureTextEntry
             placeholder="Tu contraseña"
           />
+
+          <Pressable
+            style={styles.confiarFila}
+            onPress={() => setConfiar((v) => !v)}
+            hitSlop={8}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: confiar }}
+            accessibilityLabel="Confiar en este dispositivo"
+          >
+            <MaterialCommunityIcons
+              name={confiar ? "checkbox-marked" : "checkbox-blank-outline"}
+              size={22}
+              color={confiar ? colors.secundario : colors.textoTenue}
+            />
+            <Text style={styles.confiarTexto}>
+              Confiar en este dispositivo (mantener la sesión iniciada)
+            </Text>
+          </Pressable>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -128,6 +152,16 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 440,
     alignSelf: "center",
+  },
+  confiarFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.sm,
+  },
+  confiarTexto: {
+    color: colors.textoTenue,
+    fontSize: tipografia.etiqueta,
+    flexShrink: 1,
   },
   error: {
     color: colors.error,

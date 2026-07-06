@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Boton } from "@/src/components/Boton";
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { CambiarPasswordModal } from "@/src/components/CambiarPasswordModal";
 import { Campo } from "@/src/components/Campo";
 import { CondicionSelector } from "@/src/components/CondicionSelector";
@@ -137,6 +137,10 @@ export default function Perfil() {
       setError("Altura y peso deben ser números válidos.");
       return;
     }
+    if (!Number.isInteger(alturaNum)) {
+      setError("La altura debe ser un número entero en centímetros.");
+      return;
+    }
 
     const condiciones = Object.entries(seleccion).map(([id, det]) => ({
       id_condicion: Number(id),
@@ -218,13 +222,23 @@ export default function Perfil() {
       <View style={[styles.cabecera, { paddingTop: insets.top + espaciado.md }]}>
         <Text style={styles.titulo}>Mi perfil clínico</Text>
         <View style={styles.cabeceraAcciones}>
-          <Pressable onPress={() => setCambiarPass(true)} hitSlop={12}>
-            <MaterialCommunityIcons name="lock-reset" size={24} color={colors.primario} />
-          </Pressable>
+          <BotonIcono
+            icono="lock-reset"
+            etiqueta="Contraseña"
+            modo="texto"
+            size={24}
+            color={colors.primario}
+            onPress={() => setCambiarPass(true)}
+          />
           {esAdmin ? (
-            <Pressable onPress={() => router.push("/reglas" as Href)} hitSlop={12}>
-              <MaterialCommunityIcons name="shield-account" size={24} color={colors.primario} />
-            </Pressable>
+            <BotonIcono
+              icono="shield-account"
+              etiqueta="Panel"
+              modo="texto"
+              size={24}
+              color={colors.primario}
+              onPress={() => router.push("/reglas" as Href)}
+            />
           ) : null}
         </View>
       </View>
@@ -393,8 +407,9 @@ function FormularioPerfil(props: {
       <Campo
         etiqueta="Altura (cm)"
         value={props.altura}
-        onChangeText={props.setAltura}
-        keyboardType="numeric"
+        // Centímetros enteros: se descarta cualquier caracter no numérico.
+        onChangeText={(t) => props.setAltura(t.replace(/[^0-9]/g, ""))}
+        keyboardType="number-pad"
         placeholder="175"
       />
       <Campo

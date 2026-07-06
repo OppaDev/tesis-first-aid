@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
@@ -197,12 +198,20 @@ export default function Reglas() {
       alinear: "flex-end",
       render: (r) => (
         <View style={styles.accionesCelda}>
-          <Pressable onPress={() => abrirEditar(r)} hitSlop={8}>
-            <MaterialCommunityIcons name="pencil" size={18} color={colors.primario} />
-          </Pressable>
-          <Pressable onPress={() => borrar(r)} hitSlop={8}>
-            <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.error} />
-          </Pressable>
+          <BotonIcono
+            icono="pencil"
+            etiqueta="Editar"
+            size={18}
+            color={colors.primario}
+            onPress={() => abrirEditar(r)}
+          />
+          <BotonIcono
+            icono="trash-can-outline"
+            etiqueta="Eliminar"
+            size={18}
+            color={colors.error}
+            onPress={() => borrar(r)}
+          />
         </View>
       ),
     },
@@ -338,12 +347,20 @@ function TarjetaRegla({
           <Text style={styles.cardEmer}>en {emergencia}</Text>
         </View>
         <View style={styles.cardAcciones}>
-          <Pressable onPress={onEditar} hitSlop={8}>
-            <MaterialCommunityIcons name="pencil" size={20} color={colors.primario} />
-          </Pressable>
-          <Pressable onPress={onEliminar} hitSlop={8}>
-            <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
-          </Pressable>
+          <BotonIcono
+            icono="pencil"
+            etiqueta="Editar"
+            size={20}
+            color={colors.primario}
+            onPress={onEditar}
+          />
+          <BotonIcono
+            icono="trash-can-outline"
+            etiqueta="Eliminar"
+            size={20}
+            color={colors.error}
+            onPress={onEliminar}
+          />
         </View>
       </View>
       <Text style={[styles.badge, { color: colorSeveridad(regla.severidad) }]}>

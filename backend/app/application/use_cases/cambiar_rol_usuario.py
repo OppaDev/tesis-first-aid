@@ -17,6 +17,9 @@ class CambiarRolUsuarioUseCase:
         await self._validar_no_quitar_ultimo_admin(usuario.id_rol, dto.id_rol)
 
         actualizado = await self._repo.actualizar_rol(cedula, dto.id_rol)
+        # Revoca las sesiones vigentes del usuario: su próximo request recibe 401,
+        # vuelve a iniciar sesión y obtiene un token (y vistas) con el rol nuevo.
+        await self._repo.incrementar_token_version(cedula)
         return UsuarioAdminResponseDTO.desde_entidad(actualizado)
 
     async def _validar_no_quitar_ultimo_admin(self, rol_actual: int | None, rol_nuevo: int) -> None:

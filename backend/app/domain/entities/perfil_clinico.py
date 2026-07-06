@@ -24,6 +24,8 @@ class PerfilClinico:
             )
         if self.altura_cm is not None and self.altura_cm <= 0:
             raise ValidationError("La altura debe ser mayor a cero")
+        if self.altura_cm is not None and self.altura_cm % 1 != 0:
+            raise ValidationError("La altura debe ser un número entero de centímetros")
         if self.peso_kg is not None and self.peso_kg <= 0:
             raise ValidationError("El peso debe ser mayor a cero")
 

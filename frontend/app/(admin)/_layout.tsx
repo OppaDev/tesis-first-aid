@@ -3,6 +3,7 @@ import { Href, Redirect, Slot, usePathname, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 
@@ -95,13 +96,15 @@ function IrAlaApp({ vertical }: { vertical?: boolean }) {
     );
   }
   return (
-    <Pressable
+    <BotonIcono
+      icono="medical-bag"
+      etiqueta="Ir a la app"
+      modo="texto"
+      size={22}
+      color={colors.primario}
+      estilo={styles.salirTop}
       onPress={() => router.push("/consulta" as Href)}
-      style={styles.salirTop}
-      hitSlop={8}
-    >
-      <MaterialCommunityIcons name="medical-bag" size={22} color={colors.primario} />
-    </Pressable>
+    />
   );
 }
 
@@ -114,9 +117,15 @@ function HeaderMovil({ onSalir }: { onSalir: () => void }) {
       </Text>
       <View style={styles.headerAcciones}>
         <IrAlaApp />
-        <Pressable onPress={onSalir} style={styles.salirTop} hitSlop={8}>
-          <MaterialCommunityIcons name="logout" size={22} color={colors.textoTenue} />
-        </Pressable>
+        <BotonIcono
+          icono="logout"
+          etiqueta="Salir"
+          modo="texto"
+          size={22}
+          color={colors.textoTenue}
+          estilo={styles.salirTop}
+          onPress={onSalir}
+        />
       </View>
     </View>
   );

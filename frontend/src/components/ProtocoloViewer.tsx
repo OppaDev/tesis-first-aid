@@ -5,6 +5,7 @@ import * as Speech from "expo-speech";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { VOZ_IDIOMA, VOZ_VELOCIDAD } from "@/src/config/voz";
 import { IMAGENES_PROTOCOLOS } from "@/src/data/imagenesProtocolos";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
@@ -167,21 +168,25 @@ export function ProtocoloViewer({ protocolos }: { protocolos: Protocolo[] }) {
 
           <View style={styles.controlesVoz}>
             {vozActiva ? (
-              <Pressable onPress={repetir} hitSlop={10} style={styles.botonVoz}>
-                <MaterialCommunityIcons
-                  name="replay"
-                  size={22}
-                  color={colors.primario}
-                />
-              </Pressable>
-            ) : null}
-            <Pressable onPress={alternarVoz} hitSlop={10} style={styles.botonVoz}>
-              <MaterialCommunityIcons
-                name={vozActiva ? "volume-high" : "volume-off"}
+              <BotonIcono
+                icono="replay"
+                etiqueta="Repetir"
+                modo="texto"
                 size={22}
-                color={vozActiva ? colors.primario : colors.textoTenue}
+                color={colors.primario}
+                estilo={styles.botonVoz}
+                onPress={repetir}
               />
-            </Pressable>
+            ) : null}
+            <BotonIcono
+              icono={vozActiva ? "volume-high" : "volume-off"}
+              etiqueta={vozActiva ? "Voz" : "Silencio"}
+              modo="texto"
+              size={22}
+              color={vozActiva ? colors.primario : colors.textoTenue}
+              estilo={styles.botonVoz}
+              onPress={alternarVoz}
+            />
           </View>
         </View>
 

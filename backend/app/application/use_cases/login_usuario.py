@@ -1,6 +1,7 @@
 from app.application.dtos.auth_dto import LoginRequestDTO, TokenResponseDTO
 from app.domain.exceptions import ValidationError
 from app.domain.repositories.usuario_repository import UsuarioRepository
+from app.infrastructure.config import settings
 from app.infrastructure.security.jwt import crear_token
 from app.infrastructure.security.password import hashear, verificar
 
@@ -23,10 +24,17 @@ class LoginUsuarioUseCase:
         if not verificar(dto.password, usuario.password):
             raise ValidationError("Credenciales incorrectas")
 
+        # En un dispositivo de confianza la sesión dura hasta que el usuario
+        # cierre sesión (el logout la revoca incrementando token_version).
+        minutos = (
+            settings.trusted_token_expire_days * 24 * 60
+            if dto.confiar_dispositivo
+            else None
+        )
         token = crear_token({
             "sub": usuario.cedula,
             "email": usuario.email,
             "rol": usuario.id_rol,
             "token_version": usuario.token_version,
-        })
+        }, minutos=minutos)
         return TokenResponseDTO(access_token=token)

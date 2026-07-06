@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+    # Duración del token cuando el usuario marca "confiar en este dispositivo":
+    # la sesión se mantiene hasta que él mismo cierre sesión (el logout la revoca
+    # vía token_version). Pensado para el celular personal del rescatista.
+    trusted_token_expire_days: int = 365
 
     # ASR (faster-whisper). En despliegue con GPU: asr_device="cuda", asr_compute_type="float16".
     asr_model: str = "small"

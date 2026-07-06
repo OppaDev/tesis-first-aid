@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { Campo } from "@/src/components/Campo";
 import { Paginador } from "@/src/components/Paginador";
 import { PerfilClinicoUsuarioModal } from "@/src/components/PerfilClinicoUsuarioModal";
@@ -236,26 +237,34 @@ export default function Usuarios() {
         const esAdmin = u.id_rol === ID_ROL_ADMIN;
         return (
           <View style={styles.accionesCelda}>
-            <Pressable onPress={() => abrirEditar(u)} hitSlop={8}>
-              <MaterialCommunityIcons name="pencil" size={18} color={colors.primario} />
-            </Pressable>
-            <Pressable onPress={() => abrirPerfil(u)} hitSlop={8}>
-              <MaterialCommunityIcons
-                name="clipboard-pulse-outline"
-                size={18}
-                color={colors.primario}
-              />
-            </Pressable>
-            <Pressable onPress={() => alternarRol(u)} hitSlop={8}>
-              <MaterialCommunityIcons
-                name={esAdmin ? "account-arrow-down" : "shield-account"}
-                size={18}
-                color={colors.primario}
-              />
-            </Pressable>
-            <Pressable onPress={() => borrar(u)} hitSlop={8}>
-              <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.error} />
-            </Pressable>
+            <BotonIcono
+              icono="pencil"
+              etiqueta="Editar"
+              size={18}
+              color={colors.primario}
+              onPress={() => abrirEditar(u)}
+            />
+            <BotonIcono
+              icono="clipboard-pulse-outline"
+              etiqueta="Perfil clínico"
+              size={18}
+              color={colors.primario}
+              onPress={() => abrirPerfil(u)}
+            />
+            <BotonIcono
+              icono={esAdmin ? "account-arrow-down" : "shield-account"}
+              etiqueta={esAdmin ? "Quitar admin" : "Hacer admin"}
+              size={18}
+              color={colors.primario}
+              onPress={() => alternarRol(u)}
+            />
+            <BotonIcono
+              icono="trash-can-outline"
+              etiqueta="Eliminar"
+              size={18}
+              color={colors.error}
+              onPress={() => borrar(u)}
+            />
           </View>
         );
       },
@@ -424,9 +433,14 @@ function TarjetaUsuario({
             {usuario.email}
           </Text>
         </View>
-        <Pressable onPress={onMenu} hitSlop={10} style={styles.kebab}>
-          <MaterialCommunityIcons name="dots-vertical" size={22} color={colors.textoTenue} />
-        </Pressable>
+        <BotonIcono
+          icono="dots-vertical"
+          etiqueta="Opciones"
+          size={22}
+          color={colors.textoTenue}
+          estilo={styles.kebab}
+          onPress={onMenu}
+        />
       </View>
       <View style={styles.cardBottom}>
         <Text style={styles.cardCedula}>CI: {usuario.cedula}</Text>

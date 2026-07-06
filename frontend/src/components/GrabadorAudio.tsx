@@ -51,7 +51,7 @@ export function GrabadorAudio({ onAudioListo, deshabilitado = false }: Props) {
       <Text style={styles.ayuda}>
         {grabando
           ? `Grabando ${formatoDuracion(duracionMs)} — toca para enviar`
-          : "Mantén pulsado el caso y describe la emergencia con tu voz"}
+          : "Presiona una vez para grabar tu emergencia y presiona nuevamente para enviar"}
       </Text>
     </View>
   );

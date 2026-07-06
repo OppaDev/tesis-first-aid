@@ -42,3 +42,26 @@ async def test_cu002_cp003_email_no_registrado_mismo_mensaje():
     with pytest.raises(ValidationError) as exc:
         await LoginUsuarioUseCase(repo).ejecutar(dto)
     assert str(exc.value) == "Credenciales incorrectas"
+
+
+async def test_cu002_cp004_confiar_dispositivo_emite_token_de_larga_duracion():
+    """CU002-CP004: con confiar_dispositivo el token dura días (sesión persistente);
+    sin el flag conserva la duración corta por defecto."""
+    import time
+
+    repo = FakeUsuarioRepository([crear_usuario()])
+    ahora = time.time()
+
+    corto = await LoginUsuarioUseCase(repo).ejecutar(
+        LoginRequestDTO(email="ana@mail.com", password=PASSWORD_VALIDA)
+    )
+    largo = await LoginUsuarioUseCase(repo).ejecutar(
+        LoginRequestDTO(
+            email="ana@mail.com", password=PASSWORD_VALIDA, confiar_dispositivo=True
+        )
+    )
+
+    exp_corto = verificar_token(corto.access_token)["exp"]
+    exp_largo = verificar_token(largo.access_token)["exp"]
+    assert exp_corto - ahora <= 31 * 60  # ~30 minutos
+    assert exp_largo - ahora > 300 * 24 * 60 * 60  # más de 300 días

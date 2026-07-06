@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { GrabadorAudio } from "@/src/components/GrabadorAudio";
 import { consultarAudio, consultarTexto } from "@/src/services/consulta";
 import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
@@ -76,22 +77,24 @@ export default function Consulta() {
         </View>
         <View style={styles.cabeceraAcciones}>
           {esAdmin ? (
-            <Pressable
+            <BotonIcono
+              icono="shield-account"
+              etiqueta="Panel"
+              modo="texto"
+              size={24}
+              color={colors.primario}
               onPress={() => router.push("/reglas" as Href)}
-              hitSlop={12}
-              style={({ pressed }) => (pressed ? styles.presionado : null)}
-            >
-              <MaterialCommunityIcons name="shield-account" size={24} color={colors.primario} />
-            </Pressable>
+            />
           ) : null}
           {token ? (
-            <Pressable
+            <BotonIcono
+              icono="logout"
+              etiqueta="Salir"
+              modo="texto"
+              size={24}
+              color={colors.textoTenue}
               onPress={cerrarSesion}
-              hitSlop={12}
-              style={({ pressed }) => (pressed ? styles.presionado : null)}
-            >
-              <MaterialCommunityIcons name="logout" size={24} color={colors.textoTenue} />
-            </Pressable>
+            />
           ) : (
             <Pressable
               onPress={() => router.push("/login")}
@@ -141,20 +144,15 @@ export default function Consulta() {
             style={styles.input}
             multiline
           />
-          <Pressable
+          <BotonIcono
+            icono="send"
+            etiqueta="Enviar"
+            size={22}
+            color={colors.sobrePrimario}
+            deshabilitado={cargando}
+            estilo={styles.enviar}
             onPress={enviarTexto}
-            disabled={cargando}
-            style={({ pressed }) => [
-              styles.enviar,
-              pressed ? styles.presionado : null,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="send"
-              size={22}
-              color={colors.sobrePrimario}
-            />
-          </Pressable>
+          />
         </View>
 
         <View style={styles.grabador}>

@@ -13,6 +13,8 @@ export interface RegistroRequest {
 export interface LoginRequest {
   email: string;
   password: string;
+  /** Sesión persistente: el token dura hasta que el usuario cierre sesión. */
+  confiar_dispositivo?: boolean;
 }
 
 export interface TokenResponse {

@@ -22,6 +22,9 @@ class RegistroRequestDTO(BaseModel):
 class LoginRequestDTO(BaseModel):
     email: EmailStr
     password: str
+    # "Confiar en este dispositivo": emite un token de larga duración para que
+    # la sesión persista en el celular personal (revocable con cerrar sesión).
+    confiar_dispositivo: bool = False
 
 
 class CambiarPasswordRequestDTO(BaseModel):

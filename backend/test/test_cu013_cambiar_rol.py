@@ -71,3 +71,18 @@ async def test_cu013_cp004_usuario_inexistente():
             CEDULA_VALIDA, CambiarRolRequestDTO(id_rol=ADMIN)
         )
     assert str(exc.value) == "El usuario no existe"
+
+
+async def test_cu013_cp005_cambio_de_rol_revoca_sesiones():
+    """CU013-CP005: cambiar el rol incrementa token_version → las sesiones
+    vigentes del usuario quedan revocadas y debe volver a iniciar sesión."""
+    repo = FakeUsuarioRepository([
+        crear_usuario(cedula=CEDULA_VALIDA, id_rol=USUARIO),
+    ])
+    version_previa = repo.usuarios[CEDULA_VALIDA].token_version
+
+    await CambiarRolUsuarioUseCase(repo).ejecutar(
+        CEDULA_VALIDA, CambiarRolRequestDTO(id_rol=ADMIN)
+    )
+
+    assert repo.usuarios[CEDULA_VALIDA].token_version == version_previa + 1

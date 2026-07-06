@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
+import { BotonIcono } from "@/src/components/BotonIcono";
 import { Campo } from "@/src/components/Campo";
 import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
@@ -191,12 +192,20 @@ export default function Condiciones() {
       alinear: "flex-end",
       render: (c) => (
         <View style={styles.accionesCelda}>
-          <Pressable onPress={() => abrirEditar(c)} hitSlop={8}>
-            <MaterialCommunityIcons name="pencil" size={18} color={colors.primario} />
-          </Pressable>
-          <Pressable onPress={() => borrar(c)} hitSlop={8}>
-            <MaterialCommunityIcons name="trash-can-outline" size={18} color={colors.error} />
-          </Pressable>
+          <BotonIcono
+            icono="pencil"
+            etiqueta="Editar"
+            size={18}
+            color={colors.primario}
+            onPress={() => abrirEditar(c)}
+          />
+          <BotonIcono
+            icono="trash-can-outline"
+            etiqueta="Eliminar"
+            size={18}
+            color={colors.error}
+            onPress={() => borrar(c)}
+          />
         </View>
       ),
     },
@@ -318,12 +327,20 @@ function TarjetaCondicion({
       <View style={styles.cardTop}>
         <Text style={styles.cardNombre}>{condicion.nombre_condicion}</Text>
         <View style={styles.cardAcciones}>
-          <Pressable onPress={onEditar} hitSlop={8}>
-            <MaterialCommunityIcons name="pencil" size={20} color={colors.primario} />
-          </Pressable>
-          <Pressable onPress={onEliminar} hitSlop={8}>
-            <MaterialCommunityIcons name="trash-can-outline" size={20} color={colors.error} />
-          </Pressable>
+          <BotonIcono
+            icono="pencil"
+            etiqueta="Editar"
+            size={20}
+            color={colors.primario}
+            onPress={onEditar}
+          />
+          <BotonIcono
+            icono="trash-can-outline"
+            etiqueta="Eliminar"
+            size={20}
+            color={colors.error}
+            onPress={onEliminar}
+          />
         </View>
       </View>
       <Text style={styles.cardDesc}>{condicion.descripcion_condicion}</Text>

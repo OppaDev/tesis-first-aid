@@ -13,7 +13,9 @@ class CondicionInputDTO(BaseModel):
 class PerfilClinicoRequestDTO(BaseModel):
     genero: str
     tipo_sangre: str
-    altura_cm: float = Field(..., gt=0)
+    # La altura se pide en centímetros enteros; pydantic rechaza valores
+    # con parte fraccionaria (p. ej. 170.5).
+    altura_cm: int = Field(..., gt=0)
     peso_kg: float = Field(..., gt=0)
     condiciones: list[CondicionInputDTO] = []
 
@@ -21,7 +23,7 @@ class PerfilClinicoRequestDTO(BaseModel):
 class PerfilClinicoPatchDTO(BaseModel):
     genero: str | None = None
     tipo_sangre: str | None = None
-    altura_cm: float | None = Field(default=None, gt=0)
+    altura_cm: int | None = Field(default=None, gt=0)
     peso_kg: float | None = Field(default=None, gt=0)
     condiciones: list[CondicionInputDTO] | None = None
 

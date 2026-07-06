@@ -86,3 +86,20 @@ def test_cu011_cp008_no_duplica_condiciones():
     perfil.agregar_condicion(condicion)
 
     assert len(perfil.condiciones) == 1
+
+
+def test_cu011_cp009_altura_con_decimales_rechazada():
+    """CU011-CP009: la altura debe ser un entero en centímetros; los decimales
+    se rechazan tanto en la entidad como en el DTO de entrada."""
+    import pydantic
+
+    with pytest.raises(ValidationError) as exc:
+        _perfil(altura_cm=170.5)
+    assert str(exc.value) == "La altura debe ser un número entero de centímetros"
+
+    from app.application.dtos.perfil_clinico_dto import PerfilClinicoRequestDTO
+
+    with pytest.raises(pydantic.ValidationError):
+        PerfilClinicoRequestDTO(
+            genero="Femenino", tipo_sangre="O+", altura_cm=170.5, peso_kg=70
+        )
