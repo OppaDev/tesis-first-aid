@@ -12,6 +12,7 @@ import { Boton } from "@/src/components/Boton";
 import { Campo } from "@/src/components/Campo";
 import { CondicionSelector } from "@/src/components/CondicionSelector";
 import { Selector } from "@/src/components/Selector";
+import { limpiarTexto } from "@/src/utils/texto";
 import {
   actualizarPerfilUsuario,
   crearPerfilUsuario,
@@ -130,10 +131,13 @@ export function PerfilClinicoUsuarioModal({
       tipo_sangre: tipoSangre,
       altura_cm: alturaNum,
       peso_kg: pesoNum,
-      condiciones: Object.entries(seleccion).map(([id, det]) => ({
-        id_condicion: Number(id),
-        detalle: det.trim() === "" ? null : det.trim(),
-      })),
+      condiciones: Object.entries(seleccion).map(([id, det]) => {
+        const detalle = limpiarTexto(det);
+        return {
+          id_condicion: Number(id),
+          detalle: detalle === "" ? null : detalle,
+        };
+      }),
     };
 
     setError(null);
@@ -196,6 +200,7 @@ export function PerfilClinicoUsuarioModal({
                 onChangeText={(t) => setAltura(t.replace(/[^0-9]/g, ""))}
                 keyboardType="number-pad"
                 placeholder="175"
+                maxLength={3}
               />
               <Campo
                 etiqueta="Peso (kg)"
@@ -203,6 +208,7 @@ export function PerfilClinicoUsuarioModal({
                 onChangeText={setPeso}
                 keyboardType="numeric"
                 placeholder="70"
+                maxLength={6}
               />
 
               <CondicionSelector

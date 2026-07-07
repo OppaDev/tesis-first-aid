@@ -29,3 +29,16 @@ def test_cu006_cp004_termina_en_interrogacion():
 def test_cu006_cp005_mayusculas_y_espacios():
     """CU006-CP005: mayúsculas y espacios alrededor no afectan el enrutamiento."""
     assert enrutador.enrutar("  DÓNDE consigo un torniquete  ") == TipoConsulta.PREGUNTA
+
+
+def test_cu006_cp006_texto_supera_limite_rechazado():
+    """CU006-CP006: la consulta escrita acepta hasta 400 caracteres y rechaza más
+    (defensa contra entradas desproporcionadas)."""
+    import pydantic
+    import pytest as _pytest
+
+    from app.application.dtos.consulta_dto import ConsultaRequestDTO
+
+    assert len(ConsultaRequestDTO(texto="a" * 400).texto) == 400
+    with _pytest.raises(pydantic.ValidationError):
+        ConsultaRequestDTO(texto="a" * 401)

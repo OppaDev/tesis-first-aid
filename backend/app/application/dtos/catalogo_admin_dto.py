@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
+from app.application.dtos.texto_sanitizer import limpiar_texto
 from app.domain.entities.categoria import Categoria
 from app.domain.entities.condicion import Condicion
 
 
 class CategoriaRequestDTO(BaseModel):
-    nombre_categoria: str = Field(..., min_length=1)
+    nombre_categoria: str = Field(..., min_length=1, max_length=100)
+
+    @field_validator("nombre_categoria")
+    @classmethod
+    def _limpiar(cls, v: str) -> str:
+        return limpiar_texto(v)
 
 
 class CategoriaAdminDTO(BaseModel):
@@ -23,9 +29,14 @@ class CategoriaAdminDTO(BaseModel):
 
 
 class CondicionRequestDTO(BaseModel):
-    nombre_condicion: str = Field(..., min_length=1)
-    descripcion_condicion: str = Field(..., min_length=1)
+    nombre_condicion: str = Field(..., min_length=1, max_length=100)
+    descripcion_condicion: str = Field(..., min_length=1, max_length=300)
     id_categoria: int | None = None
+
+    @field_validator("nombre_condicion", "descripcion_condicion")
+    @classmethod
+    def _limpiar(cls, v: str) -> str:
+        return limpiar_texto(v)
 
 
 class CondicionAdminDTO(BaseModel):

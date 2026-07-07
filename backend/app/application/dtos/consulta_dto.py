@@ -1,8 +1,20 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from app.application.dtos.texto_sanitizer import limpiar_texto
 
 
 class ConsultaRequestDTO(BaseModel):
-    texto: str = Field(..., min_length=3, description="Texto de la consulta o narrativa de emergencia")
+    texto: str = Field(
+        ...,
+        min_length=3,
+        max_length=400,
+        description="Texto de la consulta o narrativa de emergencia",
+    )
+
+    @field_validator("texto")
+    @classmethod
+    def _limpiar(cls, v: str) -> str:
+        return limpiar_texto(v)
 
 
 class PasoDTO(BaseModel):

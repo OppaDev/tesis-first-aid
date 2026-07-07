@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { CategoriaConCondiciones } from "@/src/types/api";
+import { LIMITE_TEXTO_LARGO } from "@/src/utils/texto";
 
 interface Props {
   catalogo: CategoriaConCondiciones[];
@@ -62,6 +63,7 @@ export function CondicionSelector({
                     placeholderTextColor={colors.textoTenue}
                     style={styles.detalle}
                     multiline
+                    maxLength={LIMITE_TEXTO_LARGO}
                   />
                 ) : null}
               </View>

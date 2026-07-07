@@ -18,6 +18,12 @@ import { useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, tipografia } from "@/src/theme/theme";
 import { ApiError } from "@/src/types/api";
 import { passwordValida, requisitosPassword } from "@/src/utils/password";
+import {
+  LIMITE_EMAIL,
+  LIMITE_PASSWORD,
+  LIMITE_TEXTO_CORTO,
+  limpiarTexto,
+} from "@/src/utils/texto";
 
 function aISO(d: Date): string {
   const mes = String(d.getMonth() + 1).padStart(2, "0");
@@ -70,8 +76,8 @@ export default function Registro() {
     try {
       await registrar({
         cedula: cedula.trim(),
-        nombres: nombres.trim(),
-        apellidos: apellidos.trim(),
+        nombres: limpiarTexto(nombres),
+        apellidos: limpiarTexto(apellidos),
         fecha_nacimiento: aISO(fechaNacimiento),
         email: email.trim(),
         password,
@@ -116,12 +122,14 @@ export default function Registro() {
             value={nombres}
             onChangeText={setNombres}
             placeholder="Tus nombres"
+            maxLength={LIMITE_TEXTO_CORTO}
           />
           <Campo
             etiqueta="Apellidos"
             value={apellidos}
             onChangeText={setApellidos}
             placeholder="Tus apellidos"
+            maxLength={LIMITE_TEXTO_CORTO}
           />
           <SelectorFecha
             etiqueta="Fecha de nacimiento"
@@ -136,6 +144,7 @@ export default function Registro() {
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="usuario@correo.com"
+            maxLength={LIMITE_EMAIL}
           />
           <View>
             <Campo
@@ -144,6 +153,7 @@ export default function Registro() {
               onChangeText={setPassword}
               secureTextEntry
               placeholder="Mínimo 8 caracteres"
+              maxLength={LIMITE_PASSWORD}
             />
             {password.length > 0 ? (
               <View style={styles.requisitos}>
@@ -174,6 +184,9 @@ export default function Registro() {
               onChangeText={setConfirmar}
               secureTextEntry
               placeholder="Repite la contraseña"
+              maxLength={LIMITE_PASSWORD}
+              returnKeyType="go"
+              onSubmitEditing={enviar}
             />
             {mostrarNoCoinciden ? (
               <Text style={styles.pista}>Las contraseñas no coinciden</Text>

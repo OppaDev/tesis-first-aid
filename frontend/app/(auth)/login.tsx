@@ -16,6 +16,7 @@ import { Boton } from "@/src/components/Boton";
 import { Campo } from "@/src/components/Campo";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, tipografia } from "@/src/theme/theme";
+import { LIMITE_EMAIL, LIMITE_PASSWORD } from "@/src/utils/texto";
 import { ApiError } from "@/src/types/api";
 
 export default function Login() {
@@ -73,6 +74,8 @@ export default function Login() {
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="usuario@correo.com"
+            maxLength={LIMITE_EMAIL}
+            returnKeyType="next"
           />
           <Campo
             etiqueta="Contraseña"
@@ -80,6 +83,9 @@ export default function Login() {
             onChangeText={setPassword}
             secureTextEntry
             placeholder="Tu contraseña"
+            maxLength={LIMITE_PASSWORD}
+            returnKeyType="go"
+            onSubmitEditing={enviar}
           />
 
           <Pressable

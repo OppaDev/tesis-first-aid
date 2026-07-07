@@ -14,6 +14,11 @@ import {
 
 import { Boton } from "@/src/components/Boton";
 import { BotonIcono } from "@/src/components/BotonIcono";
+import {
+  LIMITE_TEXTO_CORTO,
+  LIMITE_TEXTO_LARGO,
+  limpiarTexto,
+} from "@/src/utils/texto";
 import { Campo } from "@/src/components/Campo";
 import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
@@ -126,8 +131,8 @@ export default function Condiciones() {
     setErrorForm(null);
     try {
       const datos = {
-        nombre_condicion: nombre.trim(),
-        descripcion_condicion: descripcion.trim(),
+        nombre_condicion: limpiarTexto(nombre),
+        descripcion_condicion: limpiarTexto(descripcion),
         id_categoria: idCategoria,
       };
       if (editandoId != null) {
@@ -269,7 +274,13 @@ export default function Condiciones() {
             </Text>
 
             <ScrollView contentContainerStyle={styles.formContenido}>
-              <Campo etiqueta="Nombre" value={nombre} onChangeText={setNombre} placeholder="Ej.: Diabetes" />
+              <Campo
+                etiqueta="Nombre"
+                value={nombre}
+                onChangeText={setNombre}
+                placeholder="Ej.: Diabetes"
+                maxLength={LIMITE_TEXTO_CORTO}
+              />
 
               <Text style={styles.campoEtiqueta}>Descripción</Text>
               <TextInput
@@ -279,6 +290,7 @@ export default function Condiciones() {
                 placeholderTextColor={colors.textoTenue}
                 style={styles.textarea}
                 multiline
+                maxLength={LIMITE_TEXTO_LARGO}
               />
 
               <Text style={styles.campoEtiqueta}>Categoría</Text>

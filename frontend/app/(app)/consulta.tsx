@@ -3,6 +3,7 @@ import { Href, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,6 +20,7 @@ import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
 import { useResultadoStore } from "@/src/store/resultadoStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { ApiError, ConsultaResponse } from "@/src/types/api";
+import { LIMITE_NARRATIVA, limpiarTexto } from "@/src/utils/texto";
 
 export default function Consulta() {
   const cerrarSesion = useAuthStore((s) => s.cerrarSesion);
@@ -58,10 +60,11 @@ export default function Consulta() {
   };
 
   const enviarTexto = () => {
-    if (texto.trim().length < 3) {
+    const limpio = limpiarTexto(texto);
+    if (limpio.length < 3 || cargando) {
       return;
     }
-    procesar(() => consultarTexto(texto.trim()));
+    procesar(() => consultarTexto(limpio));
   };
 
   const recibirAudio = (uri: string) => {
@@ -143,6 +146,24 @@ export default function Consulta() {
             placeholderTextColor={colors.textoTenue}
             style={styles.input}
             multiline
+            maxLength={LIMITE_NARRATIVA}
+            // Enter envía la consulta. En móvil, el botón "enviar" del teclado
+            // (submitBehavior evita el salto de línea); en web, la tecla Enter
+            // (Shift+Enter conserva el salto de línea).
+            returnKeyType="send"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={enviarTexto}
+            onKeyPress={
+              Platform.OS === "web"
+                ? (e) => {
+                    const evento = e.nativeEvent as { key?: string; shiftKey?: boolean };
+                    if (evento.key === "Enter" && !evento.shiftKey) {
+                      e.preventDefault?.();
+                      enviarTexto();
+                    }
+                  }
+                : undefined
+            }
           />
           <BotonIcono
             icono="send"

@@ -14,6 +14,7 @@ import {
 
 import { Boton } from "@/src/components/Boton";
 import { BotonIcono } from "@/src/components/BotonIcono";
+import { LIMITE_TEXTO_LARGO, limpiarTexto } from "@/src/utils/texto";
 import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
 import {
@@ -125,7 +126,7 @@ export default function Reglas() {
         id_condicion: idCondicion,
         id_emergencia: idEmergencia,
         severidad,
-        mensaje: mensaje.trim(),
+        mensaje: limpiarTexto(mensaje),
       };
       if (editandoId != null) {
         await actualizarRegla(editandoId, datos);
@@ -310,6 +311,7 @@ export default function Reglas() {
                 placeholderTextColor={colors.textoTenue}
                 style={styles.textarea}
                 multiline
+                maxLength={LIMITE_TEXTO_LARGO}
               />
 
               {errorForm ? <Text style={styles.error}>{errorForm}</Text> : null}

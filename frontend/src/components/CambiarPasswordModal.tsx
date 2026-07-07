@@ -4,6 +4,7 @@ import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Boton } from "@/src/components/Boton";
 import { Campo } from "@/src/components/Campo";
+import { LIMITE_PASSWORD } from "@/src/utils/texto";
 import { useAuthStore } from "@/src/store/authStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { ApiError } from "@/src/types/api";
@@ -73,6 +74,8 @@ export function CambiarPasswordModal({ visible, onClose, onExito }: Props) {
               onChangeText={setActual}
               secureTextEntry
               placeholder="Tu contraseña actual"
+              maxLength={LIMITE_PASSWORD}
+              returnKeyType="next"
             />
 
             <View>
@@ -82,6 +85,8 @@ export function CambiarPasswordModal({ visible, onClose, onExito }: Props) {
                 onChangeText={setNueva}
                 secureTextEntry
                 placeholder="Mínimo 8 caracteres"
+                maxLength={LIMITE_PASSWORD}
+                returnKeyType="next"
               />
               {nueva.length > 0 ? (
                 <View style={styles.requisitos}>
@@ -113,6 +118,13 @@ export function CambiarPasswordModal({ visible, onClose, onExito }: Props) {
                 onChangeText={setConfirmar}
                 secureTextEntry
                 placeholder="Repite la nueva contraseña"
+                maxLength={LIMITE_PASSWORD}
+                returnKeyType="go"
+                onSubmitEditing={() => {
+                  if (puedeGuardar) {
+                    guardar();
+                  }
+                }}
               />
               {mostrarNoCoinciden ? (
                 <Text style={styles.pista}>Las contraseñas no coinciden</Text>

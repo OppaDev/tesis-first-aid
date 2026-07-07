@@ -5,8 +5,8 @@ dist/
 android/
 ios/
 
-# Entorno local: la URL del API se pasa como build-arg
-.env
+# El .env SÍ entra al build: expo export lo lee y hornea las EXPO_PUBLIC_*
+# en el bundle (no son secretos). Editar frontend/.env y reconstruir.
 
 Dockerfile
 .dockerignore

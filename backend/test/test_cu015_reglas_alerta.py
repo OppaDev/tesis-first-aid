@@ -51,3 +51,40 @@ async def test_cu015_cp004_actualizar_regla_inexistente():
     with pytest.raises(NotFoundError) as exc:
         await ActualizarReglaAlertaUseCase(FakeAlertaReglaRepository()).ejecutar(999, _dto())
     assert str(exc.value) == "La regla de alerta no existe"
+
+
+def test_cu015_cp005_mensaje_supera_limite_rechazado():
+    """CU015-CP005: el mensaje de la regla acepta hasta 300 caracteres y rechaza más."""
+    import pydantic
+
+    from app.application.dtos.regla_alerta_dto import ReglaAlertaRequestDTO
+
+    ok = ReglaAlertaRequestDTO(
+        id_condicion=1, id_emergencia="corte", mensaje="m" * 300, severidad="alta"
+    )
+    assert len(ok.mensaje) == 300
+    with pytest.raises(pydantic.ValidationError):
+        ReglaAlertaRequestDTO(
+            id_condicion=1, id_emergencia="corte", mensaje="m" * 301, severidad="alta"
+        )
+
+
+def test_cu015_cp006_mensaje_con_etiquetas_saneado():
+    """CU015-CP006: las etiquetas tipo HTML se eliminan del mensaje; un mensaje
+    compuesto solo de etiquetas se rechaza."""
+    import pydantic
+
+    from app.application.dtos.regla_alerta_dto import ReglaAlertaRequestDTO
+
+    regla = ReglaAlertaRequestDTO(
+        id_condicion=1,
+        id_emergencia="corte",
+        mensaje="<script>alert(1)</script>Presione <b>fuerte</b> la herida",
+        severidad="alta",
+    )
+    assert regla.mensaje == "alert(1)Presione fuerte la herida"
+
+    with pytest.raises(pydantic.ValidationError):
+        ReglaAlertaRequestDTO(
+            id_condicion=1, id_emergencia="corte", mensaje="<b></b>", severidad="alta"
+        )

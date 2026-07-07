@@ -13,6 +13,7 @@ import {
 
 import { Boton } from "@/src/components/Boton";
 import { BotonIcono } from "@/src/components/BotonIcono";
+import { LIMITE_TEXTO_CORTO, limpiarTexto } from "@/src/utils/texto";
 import { Campo } from "@/src/components/Campo";
 import { Paginador } from "@/src/components/Paginador";
 import { ColumnaTabla, Tabla } from "@/src/components/Tabla";
@@ -104,7 +105,7 @@ export default function Categorias() {
     setGuardando(true);
     setErrorForm(null);
     try {
-      const datos = { nombre_categoria: nombre.trim() };
+      const datos = { nombre_categoria: limpiarTexto(nombre) };
       if (editandoId != null) {
         await actualizarCategoria(editandoId, datos);
       } else {
@@ -233,6 +234,9 @@ export default function Categorias() {
               value={nombre}
               onChangeText={setNombre}
               placeholder="Ej.: Enfermedades crónicas"
+              maxLength={LIMITE_TEXTO_CORTO}
+              returnKeyType="go"
+              onSubmitEditing={guardar}
             />
 
             {errorForm ? <Text style={styles.error}>{errorForm}</Text> : null}

@@ -58,12 +58,17 @@ docker compose pull && docker compose up -d   # actualizar a nuevas imágenes
 ## Nota sobre la URL del API en el panel web
 
 La imagen `oppadev/web-first-aid` lleva la URL del backend horneada en el
-bundle en tiempo de build (variable `EXPO_PUBLIC_API_URL`). La imagen actual
-apunta a `http://localhost:8000`. Para un servidor con dominio propio hay que
-reconstruirla desde el código fuente y volver a publicarla:
+bundle en tiempo de build (variable `EXPO_PUBLIC_API_URL`). El build la toma
+automáticamente de `frontend/.env`: para cambiar de dominio/IP, editar ese
+archivo, reconstruir y volver a publicar (desde `frontend/`):
 
 ```bash
-docker build -t oppadev/web-first-aid:latest \
-  --build-arg EXPO_PUBLIC_API_URL=https://api.tudominio.com ./frontend
+# 1. Ajustar EXPO_PUBLIC_API_URL en frontend/.env
+# 2. Reconstruir y publicar
+docker build --pull --no-cache -t oppadev/web-first-aid:latest .
 docker push oppadev/web-first-aid:latest
+
+# Verificar que la URL quedó horneada en el bundle:
+docker run --rm oppadev/web-first-aid:latest \
+  sh -c "grep -rlo 'www.oppadev.com' /usr/share/nginx/html | head -3"
 ```

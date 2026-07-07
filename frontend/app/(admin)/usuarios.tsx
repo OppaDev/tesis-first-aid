@@ -30,6 +30,12 @@ import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { ApiError, UsuarioAdmin } from "@/src/types/api";
 import { confirmar } from "@/src/utils/confirmar";
 import { passwordValida, requisitosPassword } from "@/src/utils/password";
+import {
+  LIMITE_EMAIL,
+  LIMITE_PASSWORD,
+  LIMITE_TEXTO_CORTO,
+  limpiarTexto,
+} from "@/src/utils/texto";
 
 const ID_ROL_USUARIO = 2;
 const ANCHO_TABLA = 768; // >= tabla; < tarjetas con menú de acciones
@@ -146,8 +152,8 @@ export default function Usuarios() {
         }
         await crearUsuario({
           cedula: cedula.trim(),
-          nombres: nombres.trim(),
-          apellidos: apellidos.trim(),
+          nombres: limpiarTexto(nombres),
+          apellidos: limpiarTexto(apellidos),
           fecha_nacimiento: aISO(fechaNac),
           email: email.trim(),
           password,
@@ -155,8 +161,8 @@ export default function Usuarios() {
         });
       } else {
         await actualizarUsuario(cedula, {
-          nombres: nombres.trim(),
-          apellidos: apellidos.trim(),
+          nombres: limpiarTexto(nombres),
+          apellidos: limpiarTexto(apellidos),
           email: email.trim(),
         });
       }
@@ -350,8 +356,20 @@ export default function Usuarios() {
                   placeholder="0123456789"
                 />
               ) : null}
-              <Campo etiqueta="Nombres" value={nombres} onChangeText={setNombres} placeholder="Nombres" />
-              <Campo etiqueta="Apellidos" value={apellidos} onChangeText={setApellidos} placeholder="Apellidos" />
+              <Campo
+                etiqueta="Nombres"
+                value={nombres}
+                onChangeText={setNombres}
+                placeholder="Nombres"
+                maxLength={LIMITE_TEXTO_CORTO}
+              />
+              <Campo
+                etiqueta="Apellidos"
+                value={apellidos}
+                onChangeText={setApellidos}
+                placeholder="Apellidos"
+                maxLength={LIMITE_TEXTO_CORTO}
+              />
               <Campo
                 etiqueta="Correo"
                 value={email}
@@ -359,6 +377,9 @@ export default function Usuarios() {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 placeholder="usuario@correo.com"
+                maxLength={LIMITE_EMAIL}
+                returnKeyType={modo === "editar" ? "go" : "next"}
+                onSubmitEditing={modo === "editar" ? guardar : undefined}
               />
 
               {modo === "crear" ? (
@@ -376,6 +397,7 @@ export default function Usuarios() {
                       onChangeText={setPassword}
                       secureTextEntry
                       placeholder="Mínimo 8 caracteres"
+                      maxLength={LIMITE_PASSWORD}
                     />
                     {password.length > 0 ? (
                       <View style={styles.requisitos}>
@@ -406,6 +428,13 @@ export default function Usuarios() {
                       onChangeText={setConfirmarPass}
                       secureTextEntry
                       placeholder="Repite la contraseña"
+                      maxLength={LIMITE_PASSWORD}
+                      returnKeyType="go"
+                      onSubmitEditing={() => {
+                        if (passwordOk && passwordsCoinciden) {
+                          guardar();
+                        }
+                      }}
                     />
                     {mostrarNoCoinciden ? (
                       <Text style={styles.pista}>Las contraseñas no coinciden</Text>

@@ -1,18 +1,24 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
+from app.application.dtos.texto_sanitizer import limpiar_texto
 from app.domain.entities.perfil_clinico import PerfilClinico
 
 
 class CondicionInputDTO(BaseModel):
     id_condicion: int
-    detalle: str | None = None
+    detalle: str | None = Field(default=None, max_length=300)
+
+    @field_validator("detalle")
+    @classmethod
+    def _limpiar(cls, v: str | None) -> str | None:
+        return limpiar_texto(v) if v is not None else None
 
 
 class PerfilClinicoRequestDTO(BaseModel):
-    genero: str
-    tipo_sangre: str
+    genero: str = Field(..., max_length=20)
+    tipo_sangre: str = Field(..., max_length=3)
     # La altura se pide en centímetros enteros; pydantic rechaza valores
     # con parte fraccionaria (p. ej. 170.5).
     altura_cm: int = Field(..., gt=0)
@@ -21,8 +27,8 @@ class PerfilClinicoRequestDTO(BaseModel):
 
 
 class PerfilClinicoPatchDTO(BaseModel):
-    genero: str | None = None
-    tipo_sangre: str | None = None
+    genero: str | None = Field(default=None, max_length=20)
+    tipo_sangre: str | None = Field(default=None, max_length=3)
     altura_cm: int | None = Field(default=None, gt=0)
     peso_kg: float | None = Field(default=None, gt=0)
     condiciones: list[CondicionInputDTO] | None = None

@@ -33,6 +33,11 @@ import {
   MiCuentaResponse,
   PerfilResponse,
 } from "@/src/types/api";
+import {
+  LIMITE_EMAIL,
+  LIMITE_TEXTO_CORTO,
+  limpiarTexto,
+} from "@/src/utils/texto";
 
 const GENEROS = ["masculino", "femenino", "otro"] as const;
 const TIPOS_SANGRE = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"] as const;
@@ -126,8 +131,8 @@ export default function Perfil() {
     setGuardandoCuenta(true);
     try {
       const resultado = await actualizarCuenta({
-        nombres: nombres.trim(),
-        apellidos: apellidos.trim(),
+        nombres: limpiarTexto(nombres),
+        apellidos: limpiarTexto(apellidos),
         email: emailCuenta.trim(),
       });
       setCuenta(resultado);
@@ -196,10 +201,13 @@ export default function Perfil() {
       return;
     }
 
-    const condiciones = Object.entries(seleccion).map(([id, det]) => ({
-      id_condicion: Number(id),
-      detalle: det.trim() === "" ? null : det.trim(),
-    }));
+    const condiciones = Object.entries(seleccion).map(([id, det]) => {
+      const detalle = limpiarTexto(det);
+      return {
+        id_condicion: Number(id),
+        detalle: detalle === "" ? null : detalle,
+      };
+    });
 
     const payload = {
       genero,
@@ -448,12 +456,16 @@ function FormularioCuenta(props: {
         value={props.nombres}
         onChangeText={props.setNombres}
         placeholder="Nombres"
+        maxLength={LIMITE_TEXTO_CORTO}
+        returnKeyType="next"
       />
       <Campo
         etiqueta="Apellidos"
         value={props.apellidos}
         onChangeText={props.setApellidos}
         placeholder="Apellidos"
+        maxLength={LIMITE_TEXTO_CORTO}
+        returnKeyType="next"
       />
       <Campo
         etiqueta="Correo electrónico"
@@ -462,6 +474,9 @@ function FormularioCuenta(props: {
         autoCapitalize="none"
         keyboardType="email-address"
         placeholder="usuario@correo.com"
+        maxLength={LIMITE_EMAIL}
+        returnKeyType="go"
+        onSubmitEditing={props.onGuardar}
       />
 
       {props.error ? <Text style={styles.error}>{props.error}</Text> : null}
@@ -592,6 +607,7 @@ function FormularioPerfil(props: {
         onChangeText={(t) => props.setAltura(t.replace(/[^0-9]/g, ""))}
         keyboardType="number-pad"
         placeholder="175"
+        maxLength={3}
       />
       <Campo
         etiqueta="Peso (kg)"
@@ -599,6 +615,7 @@ function FormularioPerfil(props: {
         onChangeText={props.setPeso}
         keyboardType="numeric"
         placeholder="70"
+        maxLength={6}
       />
 
       <CondicionSelector

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dtos.consulta_dto import ConsultaRequestDTO, ConsultaResponseDTO
+from app.application.dtos.texto_sanitizer import limpiar_texto
 from app.application.interfaces.clasificador_port import ClasificadorEmergenciaPort
 from app.application.interfaces.respondedor_qa_port import RespondedorQAPort
 from app.application.interfaces.transcriptor_port import TranscriptorAudioPort
@@ -121,6 +122,9 @@ async def procesar_consulta_audio(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="No se detectó voz en el audio. Intenta de nuevo en un lugar más silencioso.",
         )
+    # Mismo saneo y tope que la consulta escrita (ConsultaRequestDTO). Se trunca
+    # en lugar de rechazar: en una emergencia no se aborta por hablar de más.
+    texto = limpiar_texto(texto)[:400]
 
     use_case = _construir_use_case(db, clasificador, qa)
     cedula = usuario.cedula if usuario else None
