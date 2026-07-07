@@ -2,12 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dtos.auth_dto import (
+    ActualizarMiCuentaRequestDTO,
     CambiarPasswordRequestDTO,
     LoginRequestDTO,
+    MiCuentaResponseDTO,
     RegistroRequestDTO,
     TokenResponseDTO,
     UsuarioResponseDTO,
 )
+from app.application.use_cases.actualizar_mi_cuenta import ActualizarMiCuentaUseCase
 from app.application.use_cases.cambiar_password_usuario import CambiarPasswordUsuarioUseCase
 from app.application.use_cases.cerrar_sesion_usuario import CerrarSesionUsuarioUseCase
 from app.application.use_cases.login_usuario import LoginUsuarioUseCase
@@ -41,6 +44,26 @@ async def login(request: Request, dto: LoginRequestDTO, db: AsyncSession = Depen
         return await LoginUsuarioUseCase(repo).ejecutar(dto)
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+
+
+@router.get("/me", response_model=MiCuentaResponseDTO)
+async def mi_cuenta(usuario: Usuario = Depends(get_usuario_actual)):
+    """Datos de cuenta del usuario autenticado (los ingresados al registrarse)."""
+    return MiCuentaResponseDTO.desde_entidad(usuario)
+
+
+@router.put("/me", response_model=MiCuentaResponseDTO)
+async def actualizar_mi_cuenta(
+    dto: ActualizarMiCuentaRequestDTO,
+    usuario: Usuario = Depends(get_usuario_actual),
+    db: AsyncSession = Depends(get_db),
+):
+    """El usuario actualiza sus propios datos de cuenta (nombres, apellidos, email)."""
+    try:
+        repo = UsuarioRepositoryImpl(db)
+        return await ActualizarMiCuentaUseCase(repo).ejecutar(usuario.cedula, dto)
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)

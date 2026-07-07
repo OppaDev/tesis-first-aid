@@ -29,6 +29,7 @@ import { ID_ROL_ADMIN } from "@/src/store/authStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import { ApiError, UsuarioAdmin } from "@/src/types/api";
 import { confirmar } from "@/src/utils/confirmar";
+import { passwordValida, requisitosPassword } from "@/src/utils/password";
 
 const ID_ROL_USUARIO = 2;
 const ANCHO_TABLA = 768; // >= tabla; < tarjetas con menú de acciones
@@ -57,9 +58,16 @@ export default function Usuarios() {
   const [fechaNac, setFechaNac] = useState<Date | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmarPass, setConfirmarPass] = useState("");
   const [idRol, setIdRol] = useState<number>(ID_ROL_USUARIO);
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
+
+  // Validación de contraseña en tiempo real (solo al crear)
+  const requisitos = requisitosPassword(password);
+  const passwordOk = passwordValida(password);
+  const passwordsCoinciden = password.length > 0 && password === confirmarPass;
+  const mostrarNoCoinciden = confirmarPass.length > 0 && password !== confirmarPass;
 
   // Modal de perfil clínico (crear/editar el perfil de un usuario)
   const [perfilCedula, setPerfilCedula] = useState<string | null>(null);
@@ -101,6 +109,7 @@ export default function Usuarios() {
     setFechaNac(null);
     setEmail("");
     setPassword("");
+    setConfirmarPass("");
     setIdRol(ID_ROL_USUARIO);
     setErrorForm(null);
     setModal(true);
@@ -125,8 +134,13 @@ export default function Usuarios() {
     setErrorForm(null);
     try {
       if (modo === "crear") {
-        if (cedula.trim().length < 10 || !fechaNac || password.length < 6) {
-          setErrorForm("Revisa cédula (10 dígitos), fecha de nacimiento y contraseña (mín. 6).");
+        if (cedula.trim().length < 10 || !fechaNac) {
+          setErrorForm("Revisa la cédula (10 dígitos) y la fecha de nacimiento.");
+          setGuardando(false);
+          return;
+        }
+        if (!passwordValida(password) || password !== confirmarPass) {
+          setErrorForm("La contraseña no cumple los requisitos o no coincide.");
           setGuardando(false);
           return;
         }
@@ -355,13 +369,50 @@ export default function Usuarios() {
                     onChange={setFechaNac}
                     maxima={new Date()}
                   />
-                  <Campo
-                    etiqueta="Contraseña"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholder="Mínimo 6 caracteres"
-                  />
+                  <View>
+                    <Campo
+                      etiqueta="Contraseña"
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      placeholder="Mínimo 8 caracteres"
+                    />
+                    {password.length > 0 ? (
+                      <View style={styles.requisitos}>
+                        {requisitos.map((r) => (
+                          <View key={r.etiqueta} style={styles.requisito}>
+                            <MaterialCommunityIcons
+                              name={r.cumple ? "check-circle" : "close-circle"}
+                              size={14}
+                              color={r.cumple ? colors.exito : colors.error}
+                            />
+                            <Text
+                              style={[
+                                styles.requisitoTexto,
+                                { color: r.cumple ? colors.exito : colors.textoTenue },
+                              ]}
+                            >
+                              {r.etiqueta}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
+                  <View>
+                    <Campo
+                      etiqueta="Confirmar contraseña"
+                      value={confirmarPass}
+                      onChangeText={setConfirmarPass}
+                      secureTextEntry
+                      placeholder="Repite la contraseña"
+                    />
+                    {mostrarNoCoinciden ? (
+                      <Text style={styles.pista}>Las contraseñas no coinciden</Text>
+                    ) : passwordsCoinciden ? (
+                      <Text style={styles.pistaOk}>Las contraseñas coinciden</Text>
+                    ) : null}
+                  </View>
                   <Text style={styles.campoEtiqueta}>Rol</Text>
                   <View style={styles.chips}>
                     {[
@@ -390,7 +441,12 @@ export default function Usuarios() {
 
             <View style={styles.modalAcciones}>
               <Boton titulo="Cancelar" variante="secundario" onPress={() => setModal(false)} />
-              <Boton titulo="Guardar" onPress={guardar} cargando={guardando} />
+              <Boton
+                titulo="Guardar"
+                onPress={guardar}
+                cargando={guardando}
+                deshabilitado={modo === "crear" && (!passwordOk || !passwordsCoinciden)}
+              />
             </View>
           </View>
         </View>
@@ -650,6 +706,28 @@ const styles = StyleSheet.create({
   },
   modalTitulo: { color: colors.texto, fontSize: tipografia.subtitulo, fontWeight: "800" },
   formContenido: { gap: espaciado.md },
+  requisitos: {
+    marginTop: espaciado.sm,
+    gap: espaciado.xs,
+  },
+  requisito: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: espaciado.xs,
+  },
+  requisitoTexto: {
+    fontSize: tipografia.pequeno,
+  },
+  pista: {
+    color: colors.error,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
+  },
+  pistaOk: {
+    color: colors.exito,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
+  },
   campoEtiqueta: {
     color: colors.textoTenue,
     fontSize: tipografia.etiqueta,

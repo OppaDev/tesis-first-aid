@@ -48,3 +48,34 @@ class UsuarioResponseDTO(BaseModel):
     apellidos: str
     email: str
     id_rol: int | None = None
+
+
+class MiCuentaResponseDTO(BaseModel):
+    """Datos de cuenta del usuario autenticado (los del registro)."""
+
+    cedula: str
+    nombres: str
+    apellidos: str
+    fecha_nacimiento: date
+    email: str
+    id_rol: int | None = None
+
+    @classmethod
+    def desde_entidad(cls, usuario) -> "MiCuentaResponseDTO":
+        return cls(
+            cedula=usuario.cedula,
+            nombres=usuario.nombres,
+            apellidos=usuario.apellidos,
+            fecha_nacimiento=usuario.fecha_nacimiento,
+            email=usuario.email,
+            id_rol=usuario.id_rol,
+        )
+
+
+class ActualizarMiCuentaRequestDTO(BaseModel):
+    """Campos de cuenta que el propio usuario puede editar; la cédula y la
+    fecha de nacimiento son datos de identidad y quedan de solo lectura."""
+
+    nombres: str = Field(..., min_length=2)
+    apellidos: str = Field(..., min_length=2)
+    email: EmailStr

@@ -1,6 +1,8 @@
-import { API_URL, postJson } from "@/src/services/api";
+import { API_URL, getJson, postJson, putJson } from "@/src/services/api";
 import {
+  ActualizarCuentaRequest,
   LoginRequest,
+  MiCuentaResponse,
   RegistroRequest,
   TokenResponse,
   UsuarioResponse,
@@ -12,6 +14,18 @@ export function login(datos: LoginRequest): Promise<TokenResponse> {
 
 export function registro(datos: RegistroRequest): Promise<UsuarioResponse> {
   return postJson<UsuarioResponse>("/auth/registro", datos);
+}
+
+/** Datos de cuenta del usuario autenticado. */
+export function obtenerCuenta(): Promise<MiCuentaResponse> {
+  return getJson<MiCuentaResponse>("/auth/me");
+}
+
+/** Actualiza nombres, apellidos y correo del propio usuario. */
+export function actualizarCuenta(
+  datos: ActualizarCuentaRequest,
+): Promise<MiCuentaResponse> {
+  return putJson<MiCuentaResponse>("/auth/me", datos);
 }
 
 export function cambiarPassword(

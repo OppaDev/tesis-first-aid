@@ -17,6 +17,23 @@ export interface LoginRequest {
   confiar_dispositivo?: boolean;
 }
 
+/** Datos de cuenta del usuario autenticado (los ingresados al registrarse). */
+export interface MiCuentaResponse {
+  cedula: string;
+  nombres: string;
+  apellidos: string;
+  fecha_nacimiento: string; // YYYY-MM-DD
+  email: string;
+  id_rol: number | null;
+}
+
+/** Campos de cuenta editables por el propio usuario. */
+export interface ActualizarCuentaRequest {
+  nombres: string;
+  apellidos: string;
+  email: string;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;

@@ -17,6 +17,7 @@ import { CambiarPasswordModal } from "@/src/components/CambiarPasswordModal";
 import { Campo } from "@/src/components/Campo";
 import { CondicionSelector } from "@/src/components/CondicionSelector";
 import { Selector } from "@/src/components/Selector";
+import { actualizarCuenta, obtenerCuenta } from "@/src/services/auth";
 import { listarCatalogo } from "@/src/services/condiciones";
 import {
   actualizarPerfil,
@@ -29,6 +30,7 @@ import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 import {
   ApiError,
   CategoriaConCondiciones,
+  MiCuentaResponse,
   PerfilResponse,
 } from "@/src/types/api";
 
@@ -51,6 +53,15 @@ export default function Perfil() {
   const [modo, setModo] = useState<"ver" | "editar">("ver");
   const [cambiarPass, setCambiarPass] = useState(false);
 
+  // Datos de cuenta (los del registro)
+  const [cuenta, setCuenta] = useState<MiCuentaResponse | null>(null);
+  const [modoCuenta, setModoCuenta] = useState<"ver" | "editar">("ver");
+  const [guardandoCuenta, setGuardandoCuenta] = useState(false);
+  const [errorCuenta, setErrorCuenta] = useState<string | null>(null);
+  const [nombres, setNombres] = useState("");
+  const [apellidos, setApellidos] = useState("");
+  const [emailCuenta, setEmailCuenta] = useState("");
+
   // Campos del formulario
   const [genero, setGenero] = useState("");
   const [tipoSangre, setTipoSangre] = useState("");
@@ -67,7 +78,12 @@ export default function Perfil() {
       setCargando(true);
       setError(null);
       try {
-        setCatalogo(await listarCatalogo());
+        const [datosCuenta, datosCatalogo] = await Promise.all([
+          obtenerCuenta(),
+          listarCatalogo(),
+        ]);
+        setCuenta(datosCuenta);
+        setCatalogo(datosCatalogo);
         try {
           setPerfil(await obtenerPerfil());
         } catch (e) {
@@ -87,6 +103,44 @@ export default function Perfil() {
     };
     cargar();
   }, [token]);
+
+  const abrirEdicionCuenta = () => {
+    if (!cuenta) return;
+    setErrorCuenta(null);
+    setNombres(cuenta.nombres);
+    setApellidos(cuenta.apellidos);
+    setEmailCuenta(cuenta.email);
+    setModoCuenta("editar");
+  };
+
+  const guardarCuenta = async () => {
+    if (nombres.trim().length < 2 || apellidos.trim().length < 2) {
+      setErrorCuenta("Nombres y apellidos deben tener al menos 2 caracteres.");
+      return;
+    }
+    if (!emailCuenta.includes("@")) {
+      setErrorCuenta("El correo no tiene un formato válido.");
+      return;
+    }
+    setErrorCuenta(null);
+    setGuardandoCuenta(true);
+    try {
+      const resultado = await actualizarCuenta({
+        nombres: nombres.trim(),
+        apellidos: apellidos.trim(),
+        email: emailCuenta.trim(),
+      });
+      setCuenta(resultado);
+      setModoCuenta("ver");
+      Alert.alert("Datos actualizados", "Tus datos se guardaron correctamente.");
+    } catch (e) {
+      setErrorCuenta(
+        e instanceof ApiError ? e.message : "No se pudieron guardar los datos",
+      );
+    } finally {
+      setGuardandoCuenta(false);
+    }
+  };
 
   const abrirEdicion = () => {
     setError(null);
@@ -198,7 +252,7 @@ export default function Perfil() {
     return (
       <View style={styles.flex}>
         <View style={[styles.cabecera, { paddingTop: insets.top + espaciado.md }]}>
-          <Text style={styles.titulo}>Mi perfil clínico</Text>
+          <Text style={styles.titulo}>Mi perfil</Text>
         </View>
         <View style={styles.vacio}>
           <MaterialCommunityIcons
@@ -220,16 +274,8 @@ export default function Perfil() {
   return (
     <View style={styles.flex}>
       <View style={[styles.cabecera, { paddingTop: insets.top + espaciado.md }]}>
-        <Text style={styles.titulo}>Mi perfil clínico</Text>
+        <Text style={styles.titulo}>Mi perfil</Text>
         <View style={styles.cabeceraAcciones}>
-          <BotonIcono
-            icono="lock-reset"
-            etiqueta="Contraseña"
-            modo="texto"
-            size={24}
-            color={colors.primario}
-            onPress={() => setCambiarPass(true)}
-          />
           {esAdmin ? (
             <BotonIcono
               icono="shield-account"
@@ -284,17 +330,152 @@ export default function Perfil() {
               setModo("ver");
             }}
           />
-        ) : perfil ? (
-          <VistaPerfil
-            perfil={perfil}
-            onEditar={abrirEdicion}
-            onEliminar={confirmarEliminar}
-            error={error}
-          />
         ) : (
-          <VacioPerfil onCrear={abrirEdicion} error={error} />
+          <>
+            {cuenta ? (
+              modoCuenta === "editar" ? (
+                <FormularioCuenta
+                  nombres={nombres}
+                  setNombres={setNombres}
+                  apellidos={apellidos}
+                  setApellidos={setApellidos}
+                  email={emailCuenta}
+                  setEmail={setEmailCuenta}
+                  error={errorCuenta}
+                  guardando={guardandoCuenta}
+                  onGuardar={guardarCuenta}
+                  onCancelar={() => {
+                    setErrorCuenta(null);
+                    setModoCuenta("ver");
+                  }}
+                />
+              ) : (
+                <SeccionCuenta
+                  cuenta={cuenta}
+                  onEditar={abrirEdicionCuenta}
+                  onPassword={() => setCambiarPass(true)}
+                />
+              )
+            ) : null}
+
+            <Text style={styles.seccionTitulo}>Perfil clínico</Text>
+            {perfil ? (
+              <VistaPerfil
+                perfil={perfil}
+                onEditar={abrirEdicion}
+                onEliminar={confirmarEliminar}
+                error={error}
+              />
+            ) : (
+              <VacioPerfil onCrear={abrirEdicion} error={error} />
+            )}
+          </>
         )}
       </ScrollView>
+    </View>
+  );
+}
+
+/** Convierte "YYYY-MM-DD" a "DD/MM/YYYY" para mostrar. */
+function formatoFecha(iso: string): string {
+  const [anio, mes, dia] = iso.split("-");
+  return `${dia}/${mes}/${anio}`;
+}
+
+function SeccionCuenta({
+  cuenta,
+  onEditar,
+  onPassword,
+}: {
+  cuenta: MiCuentaResponse;
+  onEditar: () => void;
+  onPassword: () => void;
+}) {
+  return (
+    <View style={styles.bloque}>
+      <View style={styles.seccionCabecera}>
+        <Text style={styles.seccionTitulo}>Mis datos</Text>
+        <View style={styles.cabeceraAcciones}>
+          <BotonIcono
+            icono="pencil"
+            etiqueta="Editar"
+            modo="texto"
+            size={20}
+            color={colors.primario}
+            onPress={onEditar}
+          />
+          <BotonIcono
+            icono="lock-reset"
+            etiqueta="Contraseña"
+            modo="texto"
+            size={20}
+            color={colors.primario}
+            onPress={onPassword}
+          />
+        </View>
+      </View>
+      <View style={styles.tarjeta}>
+        <Dato etiqueta="Cédula" valor={cuenta.cedula} />
+        <Dato etiqueta="Nombres" valor={cuenta.nombres} />
+        <Dato etiqueta="Apellidos" valor={cuenta.apellidos} />
+        <Dato
+          etiqueta="Fecha de nacimiento"
+          valor={formatoFecha(cuenta.fecha_nacimiento)}
+        />
+        <Dato etiqueta="Correo" valor={cuenta.email} />
+      </View>
+    </View>
+  );
+}
+
+function FormularioCuenta(props: {
+  nombres: string;
+  setNombres: (v: string) => void;
+  apellidos: string;
+  setApellidos: (v: string) => void;
+  email: string;
+  setEmail: (v: string) => void;
+  error: string | null;
+  guardando: boolean;
+  onGuardar: () => void;
+  onCancelar: () => void;
+}) {
+  return (
+    <View style={styles.bloque}>
+      <Text style={styles.seccionTitulo}>Editar mis datos</Text>
+      <Campo
+        etiqueta="Nombres"
+        value={props.nombres}
+        onChangeText={props.setNombres}
+        placeholder="Nombres"
+      />
+      <Campo
+        etiqueta="Apellidos"
+        value={props.apellidos}
+        onChangeText={props.setApellidos}
+        placeholder="Apellidos"
+      />
+      <Campo
+        etiqueta="Correo electrónico"
+        value={props.email}
+        onChangeText={props.setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        placeholder="usuario@correo.com"
+      />
+
+      {props.error ? <Text style={styles.error}>{props.error}</Text> : null}
+
+      <Boton
+        titulo="Guardar"
+        onPress={props.onGuardar}
+        cargando={props.guardando}
+      />
+      <Boton
+        titulo="Cancelar"
+        variante="secundario"
+        onPress={props.onCancelar}
+      />
     </View>
   );
 }
@@ -481,6 +662,17 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 720,
     alignSelf: "center",
+    gap: espaciado.xl,
+  },
+  seccionCabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  seccionTitulo: {
+    color: colors.texto,
+    fontSize: tipografia.cuerpo,
+    fontWeight: "800",
   },
   bloque: {
     gap: espaciado.lg,
