@@ -38,6 +38,7 @@ import {
   LIMITE_TEXTO_CORTO,
   limpiarTexto,
 } from "@/src/utils/texto";
+import { emailValido } from "@/src/utils/validaciones";
 
 const GENEROS = ["masculino", "femenino", "otro"] as const;
 const TIPOS_SANGRE = ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"] as const;
@@ -467,17 +468,22 @@ function FormularioCuenta(props: {
         maxLength={LIMITE_TEXTO_CORTO}
         returnKeyType="next"
       />
-      <Campo
-        etiqueta="Correo electrónico"
-        value={props.email}
-        onChangeText={props.setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        placeholder="usuario@correo.com"
-        maxLength={LIMITE_EMAIL}
-        returnKeyType="go"
-        onSubmitEditing={props.onGuardar}
-      />
+      <View>
+        <Campo
+          etiqueta="Correo electrónico"
+          value={props.email}
+          onChangeText={props.setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          placeholder="usuario@correo.com"
+          maxLength={LIMITE_EMAIL}
+          returnKeyType="go"
+          onSubmitEditing={props.onGuardar}
+        />
+        {props.email.length > 0 && !emailValido(props.email) ? (
+          <Text style={styles.pista}>El correo no tiene un formato válido</Text>
+        ) : null}
+      </View>
 
       {props.error ? <Text style={styles.error}>{props.error}</Text> : null}
 
@@ -759,5 +765,10 @@ const styles = StyleSheet.create({
   error: {
     color: colors.error,
     fontSize: tipografia.etiqueta,
+  },
+  pista: {
+    color: colors.error,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
   },
 });

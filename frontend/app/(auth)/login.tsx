@@ -117,9 +117,12 @@ export default function Login() {
             </Link>
           </View>
 
-          <Pressable onPress={() => router.replace("/consulta")} hitSlop={8}>
-            <Text style={styles.continuar}>Continuar sin iniciar sesión</Text>
-          </Pressable>
+          {Platform.OS === "web" ? null : (
+            // Solo móvil: en web no hay consulta anónima (panel de gestión).
+            <Pressable onPress={() => router.replace("/consulta")} hitSlop={8}>
+              <Text style={styles.continuar}>Continuar sin iniciar sesión</Text>
+            </Pressable>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

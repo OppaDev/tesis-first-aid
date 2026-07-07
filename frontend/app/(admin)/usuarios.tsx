@@ -36,6 +36,12 @@ import {
   LIMITE_TEXTO_CORTO,
   limpiarTexto,
 } from "@/src/utils/texto";
+import {
+  cedulaValida,
+  EDAD_MINIMA,
+  emailValido,
+  fechaMaximaNacimiento,
+} from "@/src/utils/validaciones";
 
 const ID_ROL_USUARIO = 2;
 const ANCHO_TABLA = 768; // >= tabla; < tarjetas con menú de acciones
@@ -69,11 +75,17 @@ export default function Usuarios() {
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
 
-  // Validación de contraseña en tiempo real (solo al crear)
+  // Validaciones en tiempo real del formulario (espejo del backend)
   const requisitos = requisitosPassword(password);
   const passwordOk = passwordValida(password);
   const passwordsCoinciden = password.length > 0 && password === confirmarPass;
   const mostrarNoCoinciden = confirmarPass.length > 0 && password !== confirmarPass;
+  const cedulaOk = cedulaValida(cedula);
+  const emailOk = emailValido(email);
+  const crearInvalido =
+    modo === "crear" &&
+    (!passwordOk || !passwordsCoinciden || !cedulaOk || !emailOk);
+  const editarInvalido = modo === "editar" && !emailOk;
 
   // Modal de perfil clínico (crear/editar el perfil de un usuario)
   const [perfilCedula, setPerfilCedula] = useState<string | null>(null);
@@ -347,14 +359,23 @@ export default function Usuarios() {
 
             <ScrollView contentContainerStyle={styles.formContenido}>
               {modo === "crear" ? (
-                <Campo
-                  etiqueta="Cédula"
-                  value={cedula}
-                  onChangeText={setCedula}
-                  keyboardType="number-pad"
-                  maxLength={10}
-                  placeholder="0123456789"
-                />
+                <View>
+                  <Campo
+                    etiqueta="Cédula"
+                    value={cedula}
+                    onChangeText={(t) => setCedula(t.replace(/[^0-9]/g, ""))}
+                    keyboardType="number-pad"
+                    maxLength={10}
+                    placeholder="0123456789"
+                  />
+                  {cedula.length === 10 ? (
+                    cedulaOk ? (
+                      <Text style={styles.pistaOk}>Cédula válida</Text>
+                    ) : (
+                      <Text style={styles.pista}>La cédula no es válida</Text>
+                    )
+                  ) : null}
+                </View>
               ) : null}
               <Campo
                 etiqueta="Nombres"
@@ -370,26 +391,39 @@ export default function Usuarios() {
                 placeholder="Apellidos"
                 maxLength={LIMITE_TEXTO_CORTO}
               />
-              <Campo
-                etiqueta="Correo"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                placeholder="usuario@correo.com"
-                maxLength={LIMITE_EMAIL}
-                returnKeyType={modo === "editar" ? "go" : "next"}
-                onSubmitEditing={modo === "editar" ? guardar : undefined}
-              />
+              <View>
+                <Campo
+                  etiqueta="Correo"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  placeholder="usuario@correo.com"
+                  maxLength={LIMITE_EMAIL}
+                  returnKeyType={modo === "editar" ? "go" : "next"}
+                  onSubmitEditing={modo === "editar" ? guardar : undefined}
+                />
+                {email.length > 0 && !emailOk ? (
+                  <Text style={styles.pista}>El correo no tiene un formato válido</Text>
+                ) : null}
+              </View>
 
               {modo === "crear" ? (
                 <>
-                  <SelectorFecha
-                    etiqueta="Fecha de nacimiento"
-                    valor={fechaNac}
-                    onChange={setFechaNac}
-                    maxima={new Date()}
-                  />
+                  <View>
+                    <SelectorFecha
+                      etiqueta="Fecha de nacimiento"
+                      valor={fechaNac}
+                      onChange={setFechaNac}
+                      // Mayoría de edad: no se puede elegir hace menos de 18 años.
+                      maxima={fechaMaximaNacimiento()}
+                    />
+                    {fechaNac == null ? (
+                      <Text style={styles.pistaNeutra}>
+                        El usuario debe tener al menos {EDAD_MINIMA} años
+                      </Text>
+                    ) : null}
+                  </View>
                   <View>
                     <Campo
                       etiqueta="Contraseña"
@@ -474,7 +508,7 @@ export default function Usuarios() {
                 titulo="Guardar"
                 onPress={guardar}
                 cargando={guardando}
-                deshabilitado={modo === "crear" && (!passwordOk || !passwordsCoinciden)}
+                deshabilitado={crearInvalido || editarInvalido}
               />
             </View>
           </View>
@@ -754,6 +788,11 @@ const styles = StyleSheet.create({
   },
   pistaOk: {
     color: colors.exito,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
+  },
+  pistaNeutra: {
+    color: colors.textoTenue,
     fontSize: tipografia.pequeno,
     marginTop: espaciado.xs,
   },

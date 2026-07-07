@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Redirect, useRouter } from "expo-router";
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AlertaCard } from "@/src/components/AlertaCard";
 import { ProtocoloViewer } from "@/src/components/ProtocoloViewer";
+import { SoloMovil } from "@/src/components/SoloMovil";
 import { useResultadoStore } from "@/src/store/resultadoStore";
 import { colors, espaciado, radio, tipografia } from "@/src/theme/theme";
 
@@ -18,6 +20,11 @@ export default function Protocolo() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const datos = useResultadoStore((s) => s.resultado);
+
+  // La consulta de emergencia (y su protocolo) vive en la app móvil.
+  if (Platform.OS === "web") {
+    return <SoloMovil />;
+  }
 
   // Sin resultado en memoria (p. ej. recarga directa) → volver al chat.
   if (!datos) {

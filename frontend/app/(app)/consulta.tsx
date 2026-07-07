@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BotonIcono } from "@/src/components/BotonIcono";
 import { GrabadorAudio } from "@/src/components/GrabadorAudio";
+import { SoloMovil } from "@/src/components/SoloMovil";
 import { consultarAudio, consultarTexto } from "@/src/services/consulta";
 import { ID_ROL_ADMIN, useAuthStore } from "@/src/store/authStore";
 import { useResultadoStore } from "@/src/store/resultadoStore";
@@ -70,6 +71,11 @@ export default function Consulta() {
   const recibirAudio = (uri: string) => {
     procesar(() => consultarAudio(uri));
   };
+
+  // La consulta de emergencia vive en la app móvil; la web es solo de gestión.
+  if (Platform.OS === "web") {
+    return <SoloMovil />;
+  }
 
   return (
     <View style={styles.flex}>
@@ -147,23 +153,12 @@ export default function Consulta() {
             style={styles.input}
             multiline
             maxLength={LIMITE_NARRATIVA}
-            // Enter envía la consulta. En móvil, el botón "enviar" del teclado
-            // (submitBehavior evita el salto de línea); en web, la tecla Enter
-            // (Shift+Enter conserva el salto de línea).
+            // El botón "enviar" del teclado manda la consulta (submitBehavior
+            // evita el salto de línea). Esta pantalla solo existe en móvil:
+            // en web la consulta está bloqueada (ver SoloMovil).
             returnKeyType="send"
             submitBehavior="blurAndSubmit"
             onSubmitEditing={enviarTexto}
-            onKeyPress={
-              Platform.OS === "web"
-                ? (e) => {
-                    const evento = e.nativeEvent as { key?: string; shiftKey?: boolean };
-                    if (evento.key === "Enter" && !evento.shiftKey) {
-                      e.preventDefault?.();
-                      enviarTexto();
-                    }
-                  }
-                : undefined
-            }
           />
           <BotonIcono
             icono="send"

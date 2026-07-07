@@ -1,15 +1,19 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Platform } from "react-native";
 
 import { useAuthStore } from "@/src/store/authStore";
 import { colors } from "@/src/theme/theme";
 
 export default function AppLayout() {
   const token = useAuthStore((s) => s.token);
+  // En web solo se ofrece la gestión del perfil: la consulta de emergencia
+  // vive en la app móvil (la pestaña se oculta y la ruta muestra un aviso).
+  const esWeb = Platform.OS === "web";
 
-  // Sin guard de login: la consulta es accesible para usuarios anónimos
-  // (en una emergencia no se exige iniciar sesión). La pestaña Perfil solo
-  // aparece con sesión iniciada.
+  // Sin guard de login en móvil: la consulta es accesible para usuarios
+  // anónimos (en una emergencia no se exige iniciar sesión). La pestaña
+  // Perfil solo aparece con sesión iniciada.
   return (
     <Tabs
       screenOptions={{
@@ -26,6 +30,7 @@ export default function AppLayout() {
         name="consulta"
         options={{
           title: "Consulta",
+          href: esWeb ? null : undefined, // en web no hay consulta de emergencia
           tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <MaterialCommunityIcons name="medical-bag" color={color} size={size} />
           ),

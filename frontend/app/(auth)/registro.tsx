@@ -24,6 +24,12 @@ import {
   LIMITE_TEXTO_CORTO,
   limpiarTexto,
 } from "@/src/utils/texto";
+import {
+  cedulaValida,
+  EDAD_MINIMA,
+  emailValido,
+  fechaMaximaNacimiento,
+} from "@/src/utils/validaciones";
 
 function aISO(d: Date): string {
   const mes = String(d.getMonth() + 1).padStart(2, "0");
@@ -47,19 +53,23 @@ export default function Registro() {
 
   const insets = useSafeAreaInsets();
 
-  // Validación de contraseña en tiempo real
+  // Validaciones en tiempo real (espejo de las reglas del backend)
   const requisitos = requisitosPassword(password);
   const passwordOk = passwordValida(password);
   const passwordsCoinciden = password.length > 0 && password === confirmar;
   const mostrarNoCoinciden = confirmar.length > 0 && password !== confirmar;
+  const cedulaOk = cedulaValida(cedula);
+  const emailOk = emailValido(email);
+  const mayorDeEdad =
+    fechaNacimiento != null && fechaNacimiento <= fechaMaximaNacimiento();
 
   const enviar = async () => {
     if (!fechaNacimiento) {
       setError("Selecciona tu fecha de nacimiento.");
       return;
     }
-    if (fechaNacimiento >= new Date()) {
-      setError("La fecha de nacimiento debe ser anterior a hoy.");
+    if (!mayorDeEdad) {
+      setError(`Debes tener al menos ${EDAD_MINIMA} años.`);
       return;
     }
     if (!passwordOk) {
@@ -109,14 +119,23 @@ export default function Registro() {
         </View>
 
         <View style={styles.formulario}>
-          <Campo
-            etiqueta="Cédula"
-            value={cedula}
-            onChangeText={setCedula}
-            keyboardType="number-pad"
-            placeholder="0123456789"
-            maxLength={10}
-          />
+          <View>
+            <Campo
+              etiqueta="Cédula"
+              value={cedula}
+              onChangeText={(t) => setCedula(t.replace(/[^0-9]/g, ""))}
+              keyboardType="number-pad"
+              placeholder="0123456789"
+              maxLength={10}
+            />
+            {cedula.length === 10 ? (
+              cedulaOk ? (
+                <Text style={styles.pistaOk}>Cédula válida</Text>
+              ) : (
+                <Text style={styles.pista}>La cédula no es válida</Text>
+              )
+            ) : null}
+          </View>
           <Campo
             etiqueta="Nombres"
             value={nombres}
@@ -131,21 +150,38 @@ export default function Registro() {
             placeholder="Tus apellidos"
             maxLength={LIMITE_TEXTO_CORTO}
           />
-          <SelectorFecha
-            etiqueta="Fecha de nacimiento"
-            valor={fechaNacimiento}
-            onChange={setFechaNacimiento}
-            maxima={new Date()}
-          />
-          <Campo
-            etiqueta="Correo electrónico"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholder="usuario@correo.com"
-            maxLength={LIMITE_EMAIL}
-          />
+          <View>
+            <SelectorFecha
+              etiqueta="Fecha de nacimiento"
+              valor={fechaNacimiento}
+              onChange={setFechaNacimiento}
+              // Mayoría de edad: no se puede elegir una fecha de hace menos de 18 años.
+              maxima={fechaMaximaNacimiento()}
+            />
+            {fechaNacimiento == null ? (
+              <Text style={styles.pistaNeutra}>
+                Debes tener al menos {EDAD_MINIMA} años
+              </Text>
+            ) : mayorDeEdad ? null : (
+              <Text style={styles.pista}>
+                Debes tener al menos {EDAD_MINIMA} años
+              </Text>
+            )}
+          </View>
+          <View>
+            <Campo
+              etiqueta="Correo electrónico"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="usuario@correo.com"
+              maxLength={LIMITE_EMAIL}
+            />
+            {email.length > 0 && !emailOk ? (
+              <Text style={styles.pista}>El correo no tiene un formato válido</Text>
+            ) : null}
+          </View>
           <View>
             <Campo
               etiqueta="Contraseña"
@@ -201,7 +237,9 @@ export default function Registro() {
             titulo="Registrarme"
             onPress={enviar}
             cargando={cargando}
-            deshabilitado={!passwordOk || !passwordsCoinciden}
+            deshabilitado={
+              !passwordOk || !passwordsCoinciden || !cedulaOk || !emailOk
+            }
           />
 
           <View style={styles.piePagina}>
@@ -266,6 +304,11 @@ const styles = StyleSheet.create({
   },
   pistaOk: {
     color: colors.exito,
+    fontSize: tipografia.pequeno,
+    marginTop: espaciado.xs,
+  },
+  pistaNeutra: {
+    color: colors.textoTenue,
     fontSize: tipografia.pequeno,
     marginTop: espaciado.xs,
   },

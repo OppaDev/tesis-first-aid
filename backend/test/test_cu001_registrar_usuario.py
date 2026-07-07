@@ -102,3 +102,34 @@ def test_cu001_cp009_fecha_nacimiento_no_anterior_a_hoy():
             password="hash",
         )
     assert str(exc.value) == "La fecha de nacimiento debe ser anterior a hoy"
+
+
+def test_cu001_cp010_menor_de_edad_rechazado():
+    """CU001-CP010: el registro exige al menos 18 años cumplidos; una fecha con
+    17 años se rechaza y el cumpleaños número 18 exacto (hoy) se acepta."""
+    import pydantic
+
+    from app.application.dtos.auth_dto import RegistroRequestDTO
+
+    hoy = date.today()
+
+    def _hace_anios(anios: int) -> date:
+        try:
+            return hoy.replace(year=hoy.year - anios)
+        except ValueError:  # 29 de febrero en año no bisiesto
+            return hoy.replace(year=hoy.year - anios, month=3, day=1)
+
+    datos = {
+        "cedula": CEDULA_VALIDA_2,
+        "nombres": "Luis",
+        "apellidos": "Andrade",
+        "email": "luis@mail.com",
+        "password": "Segura#2026",
+    }
+
+    with pytest.raises(pydantic.ValidationError) as exc:
+        RegistroRequestDTO(fecha_nacimiento=_hace_anios(17), **datos)
+    assert "El usuario debe tener al menos 18 años" in str(exc.value)
+
+    aceptado = RegistroRequestDTO(fecha_nacimiento=_hace_anios(18), **datos)
+    assert aceptado.fecha_nacimiento == _hace_anios(18)

@@ -4,6 +4,7 @@ from datetime import date
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from app.application.dtos.edad_validator import validar_mayor_de_edad
 from app.application.dtos.password_validator import validar_password
 from app.application.dtos.texto_sanitizer import limpiar_texto
 from app.domain.entities.usuario import Usuario
@@ -31,6 +32,11 @@ class CrearUsuarioAdminDTO(BaseModel):
     @classmethod
     def _limpiar(cls, v: str) -> str:
         return limpiar_texto(v)
+
+    @field_validator("fecha_nacimiento")
+    @classmethod
+    def _mayor_de_edad(cls, v):
+        return validar_mayor_de_edad(v)
 
 
 class ActualizarUsuarioAdminDTO(BaseModel):
